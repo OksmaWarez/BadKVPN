@@ -120,14 +120,17 @@ public abstract class VPNExecutor {
         };
 
         // Fixes the commands running too fast and causing messaging errors by any downstream plugins like LiteBans
-        var scheduleResult = threadExecutor.schedule(runCommands, 1, TimeUnit.SECONDS);
+        var scheduleResult = threadExecutor.schedule(runCommands, 200, TimeUnit.MILLISECONDS);
 
         if(scheduleResult.isCancelled()) {
             runCommands.run();
         }
 
+        var toAdd = new Tuple<>(result, player.getUuid());
         //Ensuring players are actually kicked as they are supposed to be.
-        toKick.add(new Tuple<>(result, player.getUuid()));
+        threadExecutor.schedule(() -> {
+            toKick.add(toAdd);
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
     public boolean isWhitelisted(UUID uuid) {
