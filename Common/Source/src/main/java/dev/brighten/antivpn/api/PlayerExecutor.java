@@ -22,11 +22,11 @@ import java.util.UUID;
 
 public interface PlayerExecutor {
 
-    Optional<APIPlayer> getPlayer(String name);
+  Optional<APIPlayer> getPlayer(String name);
 
-    Optional<APIPlayer> getPlayer(UUID uuid);
+  Optional<APIPlayer> getPlayer(UUID uuid);
 
-    void unloadPlayer(UUID uuid);
+  void unloadPlayer(UUID uuid);
 
-    List<APIPlayer> getOnlinePlayers();
+  List<APIPlayer> getOnlinePlayers();
 }

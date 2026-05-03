@@ -25,92 +25,123 @@ import dev.brighten.antivpn.api.CheckResult;
 import dev.brighten.antivpn.api.OfflinePlayer;
 import dev.brighten.antivpn.api.VPNExecutor;
 import dev.brighten.antivpn.utils.StringUtil;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-
 import java.util.logging.Level;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class VelocityListener extends VPNExecutor {
 
-    @Override
-    public void registerListeners() {
-        VelocityPlugin.INSTANCE.getServer().getEventManager()
-                .register(VelocityPlugin.INSTANCE.getPluginInstance(), this);
+  @Override
+  public void registerListeners() {
+    VelocityPlugin.INSTANCE
+        .getServer()
+        .getEventManager()
+        .register(VelocityPlugin.INSTANCE.getPluginInstance(), this);
 
-        VelocityPlugin.INSTANCE.getServer().getEventManager().register(VelocityPlugin.INSTANCE.getPluginInstance(), DisconnectEvent.class,
-                event -> AntiVPN.getInstance()
-                        .getPlayerExecutor()
-                        .unloadPlayer(event.getPlayer().getUniqueId()));
+    VelocityPlugin.INSTANCE
+        .getServer()
+        .getEventManager()
+        .register(
+            VelocityPlugin.INSTANCE.getPluginInstance(),
+            DisconnectEvent.class,
+            event ->
+                AntiVPN.getInstance()
+                    .getPlayerExecutor()
+                    .unloadPlayer(event.getPlayer().getUniqueId()));
 
-        VelocityPlugin.INSTANCE.getServer().getEventManager().register(VelocityPlugin.INSTANCE.getPluginInstance(), LoginEvent.class,
-                this::onLogin);
+    VelocityPlugin.INSTANCE
+        .getServer()
+        .getEventManager()
+        .register(VelocityPlugin.INSTANCE.getPluginInstance(), LoginEvent.class, this::onLogin);
+  }
+
+  public void onLogin(LoginEvent event) {
+    APIPlayer player =
+        AntiVPN.getInstance()
+            .getPlayerExecutor()
+            .getPlayer(event.getPlayer().getUniqueId())
+            .orElse(
+                new OfflinePlayer(
+                    event.getPlayer().getUniqueId(),
+                    event.getPlayer().getUsername(),
+                    event.getPlayer().getRemoteAddress().getAddress()));
+
+    CheckResult result = player.checkPlayer();
+
+    if (!result.resultType().isShouldBlock()) return;
+
+    if (!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
+      return;
     }
 
-    public void onLogin(LoginEvent event) {
-        APIPlayer player = AntiVPN.getInstance().getPlayerExecutor().getPlayer(event.getPlayer().getUniqueId())
-                .orElse(new OfflinePlayer(
-                        event.getPlayer().getUniqueId(),
-                        event.getPlayer().getUsername(),
-                        event.getPlayer().getRemoteAddress().getAddress()
-                ));
-
-        CheckResult result = player.checkPlayer();
-
-        if(!result.resultType().isShouldBlock()) return;
-
-        if(!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
-            return;
-        }
-
-        switch (result.resultType()) {
-            case DENIED_COUNTRY -> event.setResult(ResultedEvent.ComponentResult.denied(
-                    LegacyComponentSerializer.builder()
-                            .character('&')
-                            .build().deserialize(AntiVPN.getInstance().getVpnConfig()
-                                    .getCountryVanillaKickReason()
-                                    .replace("%player%", event.getPlayer().getUsername())
-                                    .replace("%country%", result.response().getCountryName())
-                                    .replace("%code%", result.response().getCountryCode()))));
-            case DENIED_PROXY -> {
-                VelocityPlugin.INSTANCE.getLogger().info(event.getPlayer().getUsername()
-                        + " joined on a VPN/Proxy (" + result.response().getMethod() + ")");
-                event.setResult(ResultedEvent.ComponentResult.denied(LegacyComponentSerializer.builder()
-                        .character('&')
-                        .build().deserialize(AntiVPN.getInstance().getVpnConfig()
-                                .getKickMessage()
-                                .replace("%player%", event.getPlayer().getUsername())
-                                .replace("%country%", result.response().getCountryName())
-                                .replace("%code%", result.response().getCountryCode()))));
-            }
-        }
+    switch (result.resultType()) {
+      case DENIED_COUNTRY ->
+          event.setResult(
+              ResultedEvent.ComponentResult.denied(
+                  LegacyComponentSerializer.builder()
+                      .character('&')
+                      .build()
+                      .deserialize(
+                          AntiVPN.getInstance()
+                              .getVpnConfig()
+                              .getCountryVanillaKickReason()
+                              .replace("%player%", event.getPlayer().getUsername())
+                              .replace("%country%", result.response().getCountryName())
+                              .replace("%code%", result.response().getCountryCode()))));
+      case DENIED_PROXY -> {
+        VelocityPlugin.INSTANCE
+            .getLogger()
+            .info(
+                event.getPlayer().getUsername()
+                    + " joined on a VPN/Proxy ("
+                    + result.response().getMethod()
+                    + ")");
+        event.setResult(
+            ResultedEvent.ComponentResult.denied(
+                LegacyComponentSerializer.builder()
+                    .character('&')
+                    .build()
+                    .deserialize(
+                        AntiVPN.getInstance()
+                            .getVpnConfig()
+                            .getKickMessage()
+                            .replace("%player%", event.getPlayer().getUsername())
+                            .replace("%country%", result.response().getCountryName())
+                            .replace("%code%", result.response().getCountryCode()))));
+      }
     }
+  }
 
-    @Override
-    public void log(Level level, String log, Object... objects) {
-        VelocityPlugin.INSTANCE.getLogger().log(level, String.format(log, objects));
-    }
+  @Override
+  public void log(Level level, String log, Object... objects) {
+    VelocityPlugin.INSTANCE.getLogger().log(level, String.format(log, objects));
+  }
 
-    @Override
-    public void log(String log, Object... objects) {
-        log(Level.INFO, String.format(log, objects));
-    }
+  @Override
+  public void log(String log, Object... objects) {
+    log(Level.INFO, String.format(log, objects));
+  }
 
-    @Override
-    public void logException(String message, Throwable ex) {
-        VelocityPlugin.INSTANCE.getLogger().log(Level.SEVERE, message, ex);
-    }
+  @Override
+  public void logException(String message, Throwable ex) {
+    VelocityPlugin.INSTANCE.getLogger().log(Level.SEVERE, message, ex);
+  }
 
-    @Override
-    public void runCommand(String command) {
-        VelocityPlugin.INSTANCE.getServer().getCommandManager()
-                .executeAsync(VelocityPlugin.INSTANCE.getServer()
-                                .getConsoleCommandSource(),
-                        StringUtil.translateAlternateColorCodes('&',
-                                command));
-    }
+  @Override
+  public void runCommand(String command) {
+    VelocityPlugin.INSTANCE
+        .getServer()
+        .getCommandManager()
+        .executeAsync(
+            VelocityPlugin.INSTANCE.getServer().getConsoleCommandSource(),
+            StringUtil.translateAlternateColorCodes('&', command));
+  }
 
-    @Override
-    public void disablePlugin() {
-        VelocityPlugin.INSTANCE.getServer().getEventManager().unregisterListener(VelocityPlugin.INSTANCE.getPluginInstance(), this);
-        VelocityPlugin.INSTANCE.getServer().getCommandManager().unregister("antivpn");
-    }
+  @Override
+  public void disablePlugin() {
+    VelocityPlugin.INSTANCE
+        .getServer()
+        .getEventManager()
+        .unregisterListener(VelocityPlugin.INSTANCE.getPluginInstance(), this);
+    VelocityPlugin.INSTANCE.getServer().getCommandManager().unregister("antivpn");
+  }
 }

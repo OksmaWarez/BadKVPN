@@ -23,62 +23,68 @@ import dev.brighten.antivpn.database.DatabaseException;
 import dev.brighten.antivpn.database.mongo.MongoVPN;
 import dev.brighten.antivpn.database.version.Version;
 import dev.brighten.antivpn.utils.CIDRUtils;
-import org.bson.Document;
-import org.bson.types.Decimal128;
-
 import java.math.BigDecimal;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import org.bson.Document;
+import org.bson.types.Decimal128;
 
 public class MongoSecond implements Version<MongoVPN> {
-    @Override
-    public void update(MongoVPN database) throws DatabaseException {
-        List<Document> backup = new ArrayList<>();
-        database.settingsDocument.find(Filters.and(Filters.eq("setting", "whitelist"),
-                        Filters.exists("ip")))
-                .forEach((Consumer<? super Document>) doc -> {
-                    backup.add(new Document(doc));
+  @Override
+  public void update(MongoVPN database) throws DatabaseException {
+    List<Document> backup = new ArrayList<>();
+    database
+        .settingsDocument
+        .find(Filters.and(Filters.eq("setting", "whitelist"), Filters.exists("ip")))
+        .forEach(
+            (Consumer<? super Document>)
+                doc -> {
+                  backup.add(new Document(doc));
 
-                    String ip = doc.getString("ip");
+                  String ip = doc.getString("ip");
 
-                    try {
-                        var cidr = new CIDRUtils(ip + "/32");
+                  try {
+                    var cidr = new CIDRUtils(ip + "/32");
 
-                        doc.append("ip_start", new Decimal128(new BigDecimal(cidr.getStartIpInt())));
-                        doc.append("ip_end", new Decimal128(new BigDecimal(cidr.getEndIpInt())));
-                        doc.append("cidr_string", cidr.toString());
-                        doc.remove("ip");
+                    doc.append("ip_start", new Decimal128(new BigDecimal(cidr.getStartIpInt())));
+                    doc.append("ip_end", new Decimal128(new BigDecimal(cidr.getEndIpInt())));
+                    doc.append("cidr_string", cidr.toString());
+                    doc.remove("ip");
 
-                        database.settingsDocument.replaceOne(Filters.eq("_id", doc.getObjectId("_id")), doc);
-                    } catch (UnknownHostException e) {
-                        rollback(backup, database);
-                        throw new RuntimeException(e);
-                    }
+                    database.settingsDocument.replaceOne(
+                        Filters.eq("_id", doc.getObjectId("_id")), doc);
+                  } catch (UnknownHostException e) {
+                    rollback(backup, database);
+                    throw new RuntimeException(e);
+                  }
                 });
 
-        database.settingsDocument.createIndex(Indexes.compoundIndex(Indexes.ascending("ip_start"), Indexes.ascending("ip_end")));
-        database.settingsDocument.createIndex(Indexes.ascending("cidr_string"));
-        var versionCollect = database.antivpnDatabase.getCollection("version");
-        versionCollect.insertOne(new Document("version", versionNumber()));
-    }
+    database.settingsDocument.createIndex(
+        Indexes.compoundIndex(Indexes.ascending("ip_start"), Indexes.ascending("ip_end")));
+    database.settingsDocument.createIndex(Indexes.ascending("cidr_string"));
+    var versionCollect = database.antivpnDatabase.getCollection("version");
+    versionCollect.insertOne(new Document("version", versionNumber()));
+  }
 
-    private void rollback(List<Document> toRollback, MongoVPN database) {
-        AntiVPN.getInstance().getExecutor().log("Rolling back to version 0...");
-        toRollback.forEach(doc -> database.settingsDocument.replaceOne(Filters.eq("_id", doc.getObjectId("_id")), doc));
-        toRollback.clear();
-    }
+  private void rollback(List<Document> toRollback, MongoVPN database) {
+    AntiVPN.getInstance().getExecutor().log("Rolling back to version 0...");
+    toRollback.forEach(
+        doc ->
+            database.settingsDocument.replaceOne(Filters.eq("_id", doc.getObjectId("_id")), doc));
+    toRollback.clear();
+  }
 
-    @Override
-    public int versionNumber() {
-        return 1;
-    }
+  @Override
+  public int versionNumber() {
+    return 1;
+  }
 
-    @Override
-    public boolean needsUpdate(MongoVPN database) {
-        var versionCollect = database.antivpnDatabase.getCollection("version");
+  @Override
+  public boolean needsUpdate(MongoVPN database) {
+    var versionCollect = database.antivpnDatabase.getCollection("version");
 
-        return versionCollect.find(Filters.eq("version", versionNumber())).first() == null;
-    }
+    return versionCollect.find(Filters.eq("version", versionNumber())).first() == null;
+  }
 }

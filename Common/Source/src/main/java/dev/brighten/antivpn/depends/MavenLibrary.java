@@ -18,43 +18,40 @@ package dev.brighten.antivpn.depends;
 
 import java.lang.annotation.*;
 
-/**
- * Annotation to indicate a required library for a class.
- */
+/** Annotation to indicate a required library for a class. */
 @Documented
 @Repeatable(MavenLibraries.class)
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MavenLibrary {
 
-    /**
-     * The group id of the library
-     *
-     * @return the group id of the library
-     */
-    String groupId();
+  /**
+   * The group id of the library
+   *
+   * @return the group id of the library
+   */
+  String groupId();
 
-    /**
-     * The artifact id of the library
-     *
-     * @return the artifact id of the library
-     */
-    String artifactId();
+  /**
+   * The artifact id of the library
+   *
+   * @return the artifact id of the library
+   */
+  String artifactId();
 
-    /**
-     * The version of the library
-     *
-     * @return the version of the library
-     */
-    String version();
+  /**
+   * The version of the library
+   *
+   * @return the version of the library
+   */
+  String version();
 
-    /**
-     * The repo where the library can be obtained from
-     *
-     * @return the repo where the library can be obtained from
-     */
-    Repository repo() default @Repository(url = "https://repo1.maven.org/maven2");
+  /**
+   * The repo where the library can be obtained from
+   *
+   * @return the repo where the library can be obtained from
+   */
+  Repository repo() default @Repository(url = "https://repo1.maven.org/maven2");
 
-    Relocate[] relocations() default {}; // Add this line
-
+  Relocate[] relocations() default {}; // Add this line
 }

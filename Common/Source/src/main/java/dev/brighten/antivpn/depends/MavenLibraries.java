@@ -18,14 +18,11 @@ package dev.brighten.antivpn.depends;
 
 import java.lang.annotation.*;
 
-/**
- * Annotation to indicate the required libraries for a class.
- */
+/** Annotation to indicate the required libraries for a class. */
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MavenLibraries {
 
-    MavenLibrary[] value() default {};
-
+  MavenLibrary[] value() default {};
 }

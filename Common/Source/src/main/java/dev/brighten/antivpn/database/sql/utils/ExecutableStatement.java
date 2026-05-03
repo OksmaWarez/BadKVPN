@@ -16,132 +16,130 @@
 
 package dev.brighten.antivpn.database.sql.utils;
 
+import java.sql.*;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-import java.sql.*;
-import java.util.UUID;
-
 public class ExecutableStatement implements AutoCloseable {
-    @Getter
-    private final PreparedStatement statement;
-    private int pos = 1;
+  @Getter private final PreparedStatement statement;
+  private int pos = 1;
 
-    public ExecutableStatement(PreparedStatement statement) {
-        this.statement = statement;
-    }
+  public ExecutableStatement(PreparedStatement statement) {
+    this.statement = statement;
+  }
 
-    public int execute() throws SQLException {
-        return statement.executeUpdate();
-    }
+  public int execute() throws SQLException {
+    return statement.executeUpdate();
+  }
 
-    public void execute(ResultSetIterator iterator) throws SQLException {
-        try(var rs = statement.executeQuery()) {
-            while (rs.next()) iterator.next(rs);
-        }
+  public void execute(ResultSetIterator iterator) throws SQLException {
+    try (var rs = statement.executeQuery()) {
+      while (rs.next()) iterator.next(rs);
     }
+  }
 
-    public int[] executeBatch() throws SQLException {
-        return statement.executeBatch();
-    }
+  public int[] executeBatch() throws SQLException {
+    return statement.executeBatch();
+  }
 
-    public ResultSet executeQuery() throws SQLException {
-        return statement.executeQuery();
-    }
+  public ResultSet executeQuery() throws SQLException {
+    return statement.executeQuery();
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Object obj) {
-        statement.setObject(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Object obj) {
+    statement.setObject(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(String obj) {
-        statement.setString(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(String obj) {
+    statement.setString(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(UUID uuid) {
-        if (uuid != null) statement.setString(pos++, uuid.toString().replace("-", ""));
-        else statement.setString(pos++, null);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(UUID uuid) {
+    if (uuid != null) statement.setString(pos++, uuid.toString().replace("-", ""));
+    else statement.setString(pos++, null);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Array obj) {
-        statement.setArray(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Array obj) {
+    statement.setArray(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Integer obj) {
-        statement.setInt(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Integer obj) {
+    statement.setInt(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Short obj) {
-        statement.setShort(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Short obj) {
+    statement.setShort(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Long obj) {
-        statement.setLong(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Long obj) {
+    statement.setLong(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Float obj) {
-        statement.setFloat(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Float obj) {
+    statement.setFloat(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Double obj) {
-        statement.setDouble(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Double obj) {
+    statement.setDouble(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Date obj) {
-        statement.setDate(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Date obj) {
+    statement.setDate(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Timestamp obj) {
-        statement.setTimestamp(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Timestamp obj) {
+    statement.setTimestamp(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Time obj) {
-        statement.setTime(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Time obj) {
+    statement.setTime(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(Blob obj) {
-        statement.setBlob(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(Blob obj) {
+    statement.setBlob(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement append(byte[] obj) {
-        statement.setBytes(pos++, obj);
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement append(byte[] obj) {
+    statement.setBytes(pos++, obj);
+    return this;
+  }
 
-    @SneakyThrows
-    public ExecutableStatement addBatch() {
-        statement.addBatch();
-        return this;
-    }
+  @SneakyThrows
+  public ExecutableStatement addBatch() {
+    statement.addBatch();
+    return this;
+  }
 
-    @Override
-    public void close() throws SQLException {
-        statement.close();
-    }
+  @Override
+  public void close() throws SQLException {
+    statement.close();
+  }
 }

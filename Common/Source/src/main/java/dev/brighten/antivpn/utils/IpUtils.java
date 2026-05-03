@@ -25,85 +25,87 @@ import java.net.UnknownHostException;
 import java.util.Optional;
 
 public class IpUtils {
-    public static Optional<BigDecimal> getIpDecimal(String address) {
-        try {
-            InetAddress inet = InetAddress.getByName(address);
+  public static Optional<BigDecimal> getIpDecimal(String address) {
+    try {
+      InetAddress inet = InetAddress.getByName(address);
 
-            if(inet instanceof Inet4Address) {
-                return Optional.of(BigDecimal.valueOf(ipv4ToLong(address)));
-            } return Optional.of(new BigDecimal(ipv6ToDecimalFormat(address)));
-        } catch(Exception e) {
-            return Optional.empty();
-        }
+      if (inet instanceof Inet4Address) {
+        return Optional.of(BigDecimal.valueOf(ipv4ToLong(address)));
+      }
+      return Optional.of(new BigDecimal(ipv6ToDecimalFormat(address)));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+  }
+
+  public static long ipv4ToLong(String address) {
+    String[] addrArray = address.split("\\.");
+
+    long ipDecimal = 0;
+
+    for (int i = 0; i < addrArray.length; i++) {
+
+      int power = 3 - i;
+      ipDecimal += ((Integer.parseInt(addrArray[i]) % 256 * Math.pow(256, power)));
     }
 
-    public static long ipv4ToLong(String address) {
-        String[] addrArray = address.split("\\.");
+    return ipDecimal;
+  }
 
-        long ipDecimal = 0;
+  public static String getIpv4(long ip) {
+    StringBuilder sb = new StringBuilder(15);
 
-        for (int i = 0; i < addrArray.length; i++) {
+    for (int i = 0; i < 4; i++) {
+      sb.insert(0, ip & 0xff);
 
-            int power = 3 - i;
-            ipDecimal += ((Integer.parseInt(addrArray[i]) % 256 * Math.pow(256, power)));
-        }
+      if (i < 3) {
+        sb.insert(0, '.');
+      }
 
-        return ipDecimal;
+      ip >>= 8;
     }
 
-    public static String getIpv4(long ip) {
-        StringBuilder sb = new StringBuilder(15);
+    return sb.toString();
+  }
 
-        for (int i = 0; i < 4; i++) {
-            sb.insert(0, ip & 0xff);
+  public static boolean isIpv4(BigDecimal ip) {
+    return ip.compareTo(BigDecimal.valueOf(4294967295L)) <= 0;
+  }
 
-            if (i < 3) {
-                sb.insert(0, '.');
-            }
+  public static boolean isIpv6(BigDecimal ip) {
+    return ip.compareTo(BigDecimal.valueOf(4294967295L)) > 0;
+  }
 
-            ip >>= 8;
-        }
+  public static boolean isIpv4(String ip) {
+    return ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
+  }
 
-        return sb.toString();
+  public static boolean isNotIp(String ip) {
+    return !isIpv4(ip) && !isIpv6(ip);
+  }
+
+  public static boolean isIpv6(String ip) {
+    return ip.matches(
+        "^([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)$|^(([0-9a-fA-F]{1,4}:){0,6}([0-9a-fA-F]{1,4}|:))?(::([0-9a-fA-F]{1,4}:){0,5}([0-9a-fA-F]{1,4}|:))?$");
+  }
+
+  public static String getIpv4(BigDecimal ip) {
+    try {
+      return Inet4Address.getByAddress(ip.toBigInteger().toByteArray()).getHostAddress();
+    } catch (UnknownHostException e) {
+      return "Error";
     }
+  }
 
-    public static boolean isIpv4(BigDecimal ip) {
-        return ip.compareTo(BigDecimal.valueOf(4294967295L)) <= 0;
+  public static String getIpv6(BigDecimal ip) {
+    try {
+      return Inet6Address.getByAddress(ip.toBigInteger().toByteArray()).getHostAddress();
+    } catch (UnknownHostException e) {
+      return "Error";
     }
+  }
 
-    public static boolean isIpv6(BigDecimal ip) {
-        return ip.compareTo(BigDecimal.valueOf(4294967295L)) > 0;
-    }
-    public static boolean isIpv4(String ip) {
-        return ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
-    }
-
-    public static boolean isNotIp(String ip) {
-        return !isIpv4(ip) && !isIpv6(ip);
-    }
-
-    public static boolean isIpv6(String ip) {
-        return ip.matches("^([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)$|^(([0-9a-fA-F]{1,4}:){0,6}([0-9a-fA-F]{1,4}|:))?(::([0-9a-fA-F]{1,4}:){0,5}([0-9a-fA-F]{1,4}|:))?$");
-    }
-
-    public static String getIpv4(BigDecimal ip) {
-        try {
-            return Inet4Address.getByAddress(ip.toBigInteger().toByteArray()).getHostAddress();
-        } catch (UnknownHostException e) {
-            return "Error";
-        }
-    }
-
-    public static String getIpv6(BigDecimal ip) {
-        try {
-            return Inet6Address.getByAddress(ip.toBigInteger().toByteArray()).getHostAddress();
-        } catch (UnknownHostException e) {
-            return "Error";
-        }
-    }
-
-    public static BigInteger ipv6ToDecimalFormat(String ipAddress) throws UnknownHostException {
-        return new BigInteger(1, Inet6Address.getByName(ipAddress).getAddress());
-    }
-
+  public static BigInteger ipv6ToDecimalFormat(String ipAddress) throws UnknownHostException {
+    return new BigInteger(1, Inet6Address.getByName(ipAddress).getAddress());
+  }
 }

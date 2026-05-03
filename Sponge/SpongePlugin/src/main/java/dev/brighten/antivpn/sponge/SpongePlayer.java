@@ -23,25 +23,25 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 public class SpongePlayer extends APIPlayer {
 
-    private final ServerPlayer player;
+  private final ServerPlayer player;
 
-    public SpongePlayer(ServerPlayer player) {
-        super(player.uniqueId(), player.name(), player.connection().address().getAddress());
-        this.player = player;
-    }
+  public SpongePlayer(ServerPlayer player) {
+    super(player.uniqueId(), player.name(), player.connection().address().getAddress());
+    this.player = player;
+  }
 
-    @Override
-    public void sendMessage(String message) {
-        player.sendMessage(Component.text(StringUtil.translateColorCodes('&', message)));
-    }
+  @Override
+  public void sendMessage(String message) {
+    player.sendMessage(Component.text(StringUtil.translateColorCodes('&', message)));
+  }
 
-    @Override
-    public void kickPlayer(String reason) {
-        player.kick(Component.text(StringUtil.translateColorCodes('&', reason)));
-    }
+  @Override
+  public void kickPlayer(String reason) {
+    player.kick(Component.text(StringUtil.translateColorCodes('&', reason)));
+  }
 
-    @Override
-    public boolean hasPermission(String permission) {
-        return player.hasPermission(permission);
-    }
+  @Override
+  public boolean hasPermission(String permission) {
+    return player.hasPermission(permission);
+  }
 }

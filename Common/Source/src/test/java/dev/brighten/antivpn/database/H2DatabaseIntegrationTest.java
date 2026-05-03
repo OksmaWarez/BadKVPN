@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 
 class H2DatabaseIntegrationTest extends DatabaseIntegrationTestSupport {
 
-    @Test
-    void h2DatabaseImplementsTheVpnDatabaseContract() throws Exception {
-        assertDatabaseContract(new H2VPN());
-    }
+  @Test
+  void h2DatabaseImplementsTheVpnDatabaseContract() throws Exception {
+    assertDatabaseContract(new H2VPN());
+  }
 }

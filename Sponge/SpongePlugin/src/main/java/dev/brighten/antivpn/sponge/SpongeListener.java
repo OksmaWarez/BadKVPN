@@ -19,6 +19,8 @@ package dev.brighten.antivpn.sponge;
 import dev.brighten.antivpn.AntiVPN;
 import dev.brighten.antivpn.api.*;
 import dev.brighten.antivpn.utils.StringUtil;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.exception.CommandException;
@@ -26,82 +28,92 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.network.ServerSideConnectionEvent;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-
 public class SpongeListener extends VPNExecutor {
 
-    @Listener(order = Order.EARLY)
-    public void onJoin(ServerSideConnectionEvent.Login event) {
-        AtomicReference<APIPlayer> player = new AtomicReference<>(AntiVPN.getInstance().getPlayerExecutor()
+  @Listener(order = Order.EARLY)
+  public void onJoin(ServerSideConnectionEvent.Login event) {
+    AtomicReference<APIPlayer> player =
+        new AtomicReference<>(
+            AntiVPN.getInstance()
+                .getPlayerExecutor()
                 .getPlayer(event.profile().uuid())
-                .orElse(new OfflinePlayer(
+                .orElse(
+                    new OfflinePlayer(
                         event.profile().uuid(),
                         event.profile().name().orElse("Unknown"),
-                        event.connection().address().getAddress()
-                )));
+                        event.connection().address().getAddress())));
 
-        CheckResult result = player.get().checkPlayer();
+    CheckResult result = player.get().checkPlayer();
 
-        if(!result.resultType().isShouldBlock()) return;
+    if (!result.resultType().isShouldBlock()) return;
 
-        if(!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
-            return;
-        }
-
-        event.setCancelled(true);
-        event.setMessage(Component.text(switch (result.resultType()) {
-            case DENIED_PROXY -> StringUtil.varReplace(AntiVPN.getInstance().getVpnConfig()
-                    .getKickMessage(), player.get(), result.response());
-            case DENIED_COUNTRY -> StringUtil.varReplace(AntiVPN.getInstance().getVpnConfig()
-                    .getCountryVanillaKickReason(), player.get(), result.response());
-            default -> "You were kicked by KauriVPN for an unknown reason!";
-        }));
+    if (!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
+      return;
     }
 
-    @Listener
-    public void onPlayerDisconnect(ServerSideConnectionEvent.Disconnect event) {
-        event.profile().ifPresent(profile ->
-                AntiVPN.getInstance().getPlayerExecutor().unloadPlayer(profile.uuid()));
-    }
+    event.setCancelled(true);
+    event.setMessage(
+        Component.text(
+            switch (result.resultType()) {
+              case DENIED_PROXY ->
+                  StringUtil.varReplace(
+                      AntiVPN.getInstance().getVpnConfig().getKickMessage(),
+                      player.get(),
+                      result.response());
+              case DENIED_COUNTRY ->
+                  StringUtil.varReplace(
+                      AntiVPN.getInstance().getVpnConfig().getCountryVanillaKickReason(),
+                      player.get(),
+                      result.response());
+              default -> "You were kicked by KauriVPN for an unknown reason!";
+            }));
+  }
 
-    @Override
-    public void registerListeners() {
-        Sponge.eventManager().registerListeners(SpongePlugin.getInstance().getContainer(), this);
-    }
+  @Listener
+  public void onPlayerDisconnect(ServerSideConnectionEvent.Disconnect event) {
+    event
+        .profile()
+        .ifPresent(
+            profile -> AntiVPN.getInstance().getPlayerExecutor().unloadPlayer(profile.uuid()));
+  }
 
-    @Override
-    public void log(Level level, String log, Object... objects) {
-        if (level.equals(Level.SEVERE)) {
-            SpongePlugin.getInstance().getLogger().error(String.format(log, objects));
-        } else if (level.equals(Level.WARNING)) {
-            SpongePlugin.getInstance().getLogger().warn(String.format(log, objects));
-        } else {
-            SpongePlugin.getInstance().getLogger().info(String.format(log, objects));
-        }
-    }
+  @Override
+  public void registerListeners() {
+    Sponge.eventManager().registerListeners(SpongePlugin.getInstance().getContainer(), this);
+  }
 
-    @Override
-    public void log(String log, Object... objects) {
-        log(Level.INFO, log, objects);
+  @Override
+  public void log(Level level, String log, Object... objects) {
+    if (level.equals(Level.SEVERE)) {
+      SpongePlugin.getInstance().getLogger().error(String.format(log, objects));
+    } else if (level.equals(Level.WARNING)) {
+      SpongePlugin.getInstance().getLogger().warn(String.format(log, objects));
+    } else {
+      SpongePlugin.getInstance().getLogger().info(String.format(log, objects));
     }
+  }
 
-    @Override
-    public void logException(String message, Throwable ex) {
-        SpongePlugin.getInstance().getLogger().error(message, ex);
-    }
+  @Override
+  public void log(String log, Object... objects) {
+    log(Level.INFO, log, objects);
+  }
 
-    @Override
-    public void runCommand(String command) {
-        try {
-            Sponge.server().commandManager().process(Sponge.systemSubject(), command);
-        } catch (CommandException e) {
-            logException(e);
-        }
-    }
+  @Override
+  public void logException(String message, Throwable ex) {
+    SpongePlugin.getInstance().getLogger().error(message, ex);
+  }
 
-    @Override
-    public void disablePlugin() {
-        AntiVPN.getInstance().getExecutor().log(Level.INFO, "Disabling listeners for plugin...");
+  @Override
+  public void runCommand(String command) {
+    try {
+      Sponge.server().commandManager().process(Sponge.systemSubject(), command);
+    } catch (CommandException e) {
+      logException(e);
     }
+  }
+
+  @Override
+  public void disablePlugin() {
+    AntiVPN.getInstance().getExecutor().log(Level.INFO, "Disabling listeners for plugin...");
+  }
 }

@@ -18,9 +18,6 @@ package dev.brighten.antivpn.database.sql.utils;
 
 import com.mysql.cj.jdbc.Driver;
 import dev.brighten.antivpn.AntiVPN;
-import org.h2.jdbc.JdbcSQLFeatureNotSupportedException;
-import org.h2.jdbc.JdbcSQLNonTransientConnectionException;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,167 +26,194 @@ import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.Properties;
 import java.util.logging.Level;
+import org.h2.jdbc.JdbcSQLFeatureNotSupportedException;
+import org.h2.jdbc.JdbcSQLNonTransientConnectionException;
 
 public class MySQL {
-    private static Connection conn;
+  private static Connection conn;
 
-    public static void init() {
-        try {
-            if (conn == null || conn.isClosed()) {
-                String url = "jdbc:mysql://" + AntiVPN.getInstance().getVpnConfig().getIp()
-                        + ":" + AntiVPN.getInstance().getVpnConfig().getPort()
-                        + "/?useSSL=true&autoReconnect=true";
-                Properties properties = new Properties();
-                properties.setProperty("user", AntiVPN.getInstance().getVpnConfig().getUsername());
-                properties.setProperty("password", AntiVPN.getInstance().getVpnConfig().getPassword());
+  public static void init() {
+    try {
+      if (conn == null || conn.isClosed()) {
+        String url =
+            "jdbc:mysql://"
+                + AntiVPN.getInstance().getVpnConfig().getIp()
+                + ":"
+                + AntiVPN.getInstance().getVpnConfig().getPort()
+                + "/?useSSL=true&autoReconnect=true";
+        Properties properties = new Properties();
+        properties.setProperty("user", AntiVPN.getInstance().getVpnConfig().getUsername());
+        properties.setProperty("password", AntiVPN.getInstance().getVpnConfig().getPassword());
 
-                conn = new Driver().connect(url, properties);
-                if (conn == null) {
-                    throw new SQLException("MySQL driver did not accept URL: " + url);
-                }
-                conn.setAutoCommit(true);
-                Query.use(conn);
-                String databaseName = AntiVPN.getInstance().getVpnConfig().getDatabaseName();
-
-                try {
-                    Query.prepare("CREATE DATABASE IF NOT EXISTS `" + databaseName + "`").execute();
-                } catch (SQLException ex) {
-                    if (!isDatabaseCreationPermissionIssue(ex)) {
-                        throw ex;
-                    }
-
-                    AntiVPN.getInstance().getExecutor().log(
-                            "No permission to create MySQL database `" + databaseName
-                                    + "`. Attempting to use the existing database instead.");
-                }
-
-                Query.prepare("USE `" + databaseName + "`").execute();
-                AntiVPN.getInstance().getExecutor().log("Connection to MySQL has been established.");
-            }
-        } catch (Exception e) {
-            AntiVPN.getInstance().getExecutor().logException("Failed to load mysql: " + e.getMessage(), e);
-            throw new RuntimeException("Could not initialize MySQL connection", e);
+        conn = new Driver().connect(url, properties);
+        if (conn == null) {
+          throw new SQLException("MySQL driver did not accept URL: " + url);
         }
-    }
+        conn.setAutoCommit(true);
+        Query.use(conn);
+        String databaseName = AntiVPN.getInstance().getVpnConfig().getDatabaseName();
 
-    private static boolean isDatabaseCreationPermissionIssue(SQLException ex) {
-        return ex instanceof SQLSyntaxErrorException
-                && ex.getMessage() != null
-                && ex.getMessage().contains("Access denied");
-    }
-
-    public static void initH2() {
-        initH2(true);
-    }
-
-    private static void initH2(boolean allowRetry) {
-        File dataFolder = new File(AntiVPN.getInstance().getPluginFolder(), "databases");
-        if (!dataFolder.exists() && dataFolder.mkdirs()) {
-            AntiVPN.getInstance().getExecutor().log("Created database directory");
-        }
-
-        File dbFile = new File(dataFolder, "database.mv.db");
-
-        File databaseFile = new File(dataFolder, "database");
         try {
-            conn = new NonClosableConnection(new org.h2.jdbc.JdbcConnection("jdbc:h2:file:" +
-                    databaseFile.getAbsolutePath(),
-                    new Properties(), AntiVPN.getInstance().getVpnConfig().getUsername(),
-                    AntiVPN.getInstance().getVpnConfig().getPassword(), false));
-            conn.setAutoCommit(true);
-            Query.use(conn);
-            AntiVPN.getInstance().getExecutor().log("Connection to H2 has been established.");
+          Query.prepare("CREATE DATABASE IF NOT EXISTS `" + databaseName + "`").execute();
         } catch (SQLException ex) {
-            AntiVPN.getInstance().getExecutor().logException("H2 exception on initialize", ex);
-            if(ex instanceof JdbcSQLFeatureNotSupportedException
-                    || ex instanceof JdbcSQLNonTransientConnectionException) {
-                AntiVPN.getInstance().getExecutor()
-                        .log("H2 database file is incompatible with this version of AntiVPN. " +
-                                "Backing up old database file...");
-                shutdown();
-                if (allowRetry && backupOldDB(dbFile, dataFolder)) {
-                    initH2(false);
-                } else {
-                    AntiVPN.getInstance().getExecutor().log(
-                            "Could not back up and remove the incompatible H2 database file automatically.");
-                }
-            } else {
-                AntiVPN.getInstance().getExecutor().logException("Failed to load H2 database: " + ex.getCause().toString(), ex);
-            }
-        } catch (Exception e) {
-            AntiVPN.getInstance().getExecutor().logException("Failed to load H2 database: " + e.getMessage(), e);
-            AntiVPN.getInstance().getExecutor().log(Level.INFO, "TIP: Try deleting the plugin folder and restarting your server!");
+          if (!isDatabaseCreationPermissionIssue(ex)) {
+            throw ex;
+          }
+
+          AntiVPN.getInstance()
+              .getExecutor()
+              .log(
+                  "No permission to create MySQL database `"
+                      + databaseName
+                      + "`. Attempting to use the existing database instead.");
         }
+
+        Query.prepare("USE `" + databaseName + "`").execute();
+        AntiVPN.getInstance().getExecutor().log("Connection to MySQL has been established.");
+      }
+    } catch (Exception e) {
+      AntiVPN.getInstance()
+          .getExecutor()
+          .logException("Failed to load mysql: " + e.getMessage(), e);
+      throw new RuntimeException("Could not initialize MySQL connection", e);
+    }
+  }
+
+  private static boolean isDatabaseCreationPermissionIssue(SQLException ex) {
+    return ex instanceof SQLSyntaxErrorException
+        && ex.getMessage() != null
+        && ex.getMessage().contains("Access denied");
+  }
+
+  public static void initH2() {
+    initH2(true);
+  }
+
+  private static void initH2(boolean allowRetry) {
+    File dataFolder = new File(AntiVPN.getInstance().getPluginFolder(), "databases");
+    if (!dataFolder.exists() && dataFolder.mkdirs()) {
+      AntiVPN.getInstance().getExecutor().log("Created database directory");
     }
 
-    public static boolean backupOldDB(File dbFile, File dataFolder) {
-        if (!dbFile.exists()) {
-            return true;
+    File dbFile = new File(dataFolder, "database.mv.db");
+
+    File databaseFile = new File(dataFolder, "database");
+    try {
+      conn =
+          new NonClosableConnection(
+              new org.h2.jdbc.JdbcConnection(
+                  "jdbc:h2:file:" + databaseFile.getAbsolutePath(),
+                  new Properties(),
+                  AntiVPN.getInstance().getVpnConfig().getUsername(),
+                  AntiVPN.getInstance().getVpnConfig().getPassword(),
+                  false));
+      conn.setAutoCommit(true);
+      Query.use(conn);
+      AntiVPN.getInstance().getExecutor().log("Connection to H2 has been established.");
+    } catch (SQLException ex) {
+      AntiVPN.getInstance().getExecutor().logException("H2 exception on initialize", ex);
+      if (ex instanceof JdbcSQLFeatureNotSupportedException
+          || ex instanceof JdbcSQLNonTransientConnectionException) {
+        AntiVPN.getInstance()
+            .getExecutor()
+            .log(
+                "H2 database file is incompatible with this version of AntiVPN. "
+                    + "Backing up old database file...");
+        shutdown();
+        if (allowRetry && backupOldDB(dbFile, dataFolder)) {
+          initH2(false);
+        } else {
+          AntiVPN.getInstance()
+              .getExecutor()
+              .log("Could not back up and remove the incompatible H2 database file automatically.");
         }
+      } else {
+        AntiVPN.getInstance()
+            .getExecutor()
+            .logException("Failed to load H2 database: " + ex.getCause().toString(), ex);
+      }
+    } catch (Exception e) {
+      AntiVPN.getInstance()
+          .getExecutor()
+          .logException("Failed to load H2 database: " + e.getMessage(), e);
+      AntiVPN.getInstance()
+          .getExecutor()
+          .log(Level.INFO, "TIP: Try deleting the plugin folder and restarting your server!");
+    }
+  }
 
-        if (!dbFile.isFile()) {
-            AntiVPN.getInstance().getExecutor().log("Skipping backup for non-file path: " + dbFile.getAbsolutePath());
-            return false;
-        }
+  public static boolean backupOldDB(File dbFile, File dataFolder) {
+    if (!dbFile.exists()) {
+      return true;
+    }
 
-        try {
-            File backupDir = new File(dataFolder, "backups");
-            if(backupDir.mkdirs()) {
-                AntiVPN.getInstance().getExecutor().log("Created backup directory");
-            } else if (backupDir.exists()) {
-                AntiVPN.getInstance().getExecutor().log("Backup directory already exists");
-            } else {
-                AntiVPN.getInstance().getExecutor().log("Could not create backup directory");
-                return false;
-            }
-            File backupFile = new File(backupDir, dbFile.getName() + ".backup_" + System.currentTimeMillis());
-            Files.copy(dbFile.toPath(), backupFile.toPath());
+    if (!dbFile.isFile()) {
+      AntiVPN.getInstance()
+          .getExecutor()
+          .log("Skipping backup for non-file path: " + dbFile.getAbsolutePath());
+      return false;
+    }
 
-            if (!dbFile.delete()) {
-                dbFile.deleteOnExit();
-                AntiVPN.getInstance().getExecutor().log("Could not delete database file - will try again on shutdown");
-                return false;
-            }
-
-            AntiVPN.getInstance().getExecutor().log("Successfully deleted incompatible database file");
-            return true;
-        } catch (IOException ex) {
-            AntiVPN.getInstance().getExecutor().logException("Failed to handle database file", ex);
-        }
-
+    try {
+      File backupDir = new File(dataFolder, "backups");
+      if (backupDir.mkdirs()) {
+        AntiVPN.getInstance().getExecutor().log("Created backup directory");
+      } else if (backupDir.exists()) {
+        AntiVPN.getInstance().getExecutor().log("Backup directory already exists");
+      } else {
+        AntiVPN.getInstance().getExecutor().log("Could not create backup directory");
         return false;
+      }
+      File backupFile =
+          new File(backupDir, dbFile.getName() + ".backup_" + System.currentTimeMillis());
+      Files.copy(dbFile.toPath(), backupFile.toPath());
+
+      if (!dbFile.delete()) {
+        dbFile.deleteOnExit();
+        AntiVPN.getInstance()
+            .getExecutor()
+            .log("Could not delete database file - will try again on shutdown");
+        return false;
+      }
+
+      AntiVPN.getInstance().getExecutor().log("Successfully deleted incompatible database file");
+      return true;
+    } catch (IOException ex) {
+      AntiVPN.getInstance().getExecutor().logException("Failed to handle database file", ex);
     }
 
-    public static void use() {
-        try {
-            init();
-        } catch (Exception e) {
-            AntiVPN.getInstance().getExecutor().logException(e);
-        }
-    }
+    return false;
+  }
 
-    public static void shutdown() {
-        try {
-            if(conn != null && !conn.isClosed()) {
-                if(conn instanceof NonClosableConnection) {
-                    ((NonClosableConnection)conn).shutdown();
-                } else conn.close();
-                conn = null;
-            }
-        } catch (Exception e) {
-            AntiVPN.getInstance().getExecutor().logException(e);
-        }
+  public static void use() {
+    try {
+      init();
+    } catch (Exception e) {
+      AntiVPN.getInstance().getExecutor().logException(e);
     }
+  }
 
-    public static boolean isClosed() {
-        if(conn == null)
-            return true;
-
-        try {
-            return conn.isClosed();
-        } catch (SQLException e) {
-            AntiVPN.getInstance().getExecutor().logException(e);
-            return true;
-        }
+  public static void shutdown() {
+    try {
+      if (conn != null && !conn.isClosed()) {
+        if (conn instanceof NonClosableConnection) {
+          ((NonClosableConnection) conn).shutdown();
+        } else conn.close();
+        conn = null;
+      }
+    } catch (Exception e) {
+      AntiVPN.getInstance().getExecutor().logException(e);
     }
+  }
+
+  public static boolean isClosed() {
+    if (conn == null) return true;
+
+    try {
+      return conn.isClosed();
+    } catch (SQLException e) {
+      AntiVPN.getInstance().getExecutor().logException(e);
+      return true;
+    }
+  }
 }

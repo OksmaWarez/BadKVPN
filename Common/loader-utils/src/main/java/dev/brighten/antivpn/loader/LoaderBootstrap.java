@@ -18,15 +18,12 @@ package dev.brighten.antivpn.loader;
 
 import java.io.File;
 
-/**
- * Minimal bootstrap plugin, called by the loader plugin.
- */
+/** Minimal bootstrap plugin, called by the loader plugin. */
 public interface LoaderBootstrap {
 
-    void onLoad(File dataFolder);
+  void onLoad(File dataFolder);
 
-    default void onEnable() {}
+  default void onEnable() {}
 
-    default void onDisable() {}
-
+  default void onDisable() {}
 }

@@ -1,110 +1,114 @@
 package dev.brighten.antivpn.bungee;
 
+import static org.mockito.Mockito.*;
+
 import dev.brighten.antivpn.AntiVPN;
+import dev.brighten.antivpn.StandardTest;
 import dev.brighten.antivpn.api.PlayerExecutor;
 import dev.brighten.antivpn.api.VPNConfig;
 import dev.brighten.antivpn.api.VPNExecutor;
 import dev.brighten.antivpn.message.MessageHandler;
 import dev.brighten.antivpn.message.VpnString;
 import dev.brighten.antivpn.web.objects.VPNResponse;
+import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.event.PreLoginEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
-import java.net.InetSocketAddress;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+public class BungeeListenerTest extends StandardTest {
 
-import static org.mockito.Mockito.*;
+  private BungeeListener listener;
+  private VPNExecutor vpnExecutor;
 
-public class BungeeListenerTest {
+  @BeforeEach
+  public void setUp() throws Exception {
+    AntiVPN antiVPN = mock(AntiVPN.class);
+    VPNConfig config = mock(VPNConfig.class);
+    PlayerExecutor playerExecutor = mock(PlayerExecutor.class);
+    vpnExecutor = mock(VPNExecutor.class);
+    MessageHandler messageHandler = mock(MessageHandler.class);
 
-    private BungeeListener listener;
-    private VPNExecutor vpnExecutor;
+    when(antiVPN.getVpnConfig()).thenReturn(config);
+    when(antiVPN.getPlayerExecutor()).thenReturn(playerExecutor);
+    when(antiVPN.getExecutor()).thenReturn(vpnExecutor);
+    when(antiVPN.getMessageHandler()).thenReturn(messageHandler);
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        AntiVPN antiVPN = mock(AntiVPN.class);
-        VPNConfig config = mock(VPNConfig.class);
-        PlayerExecutor playerExecutor = mock(PlayerExecutor.class);
-        vpnExecutor = mock(VPNExecutor.class);
-        MessageHandler messageHandler = mock(MessageHandler.class);
+    when(playerExecutor.getPlayer(any(UUID.class))).thenReturn(Optional.empty());
+    when(config.getPrefixWhitelists()).thenReturn(java.util.Collections.emptyList());
+    when(config.getCountryList()).thenReturn(java.util.Collections.emptyList());
+    when(config.isKickPlayers()).thenReturn(true);
+    when(config.getKickMessage()).thenReturn("Blocked!");
 
-        when(antiVPN.getVpnConfig()).thenReturn(config);
-        when(antiVPN.getPlayerExecutor()).thenReturn(playerExecutor);
-        when(antiVPN.getExecutor()).thenReturn(vpnExecutor);
-        when(antiVPN.getMessageHandler()).thenReturn(messageHandler);
+    VpnString mockVpnString = mock(VpnString.class);
+    when(mockVpnString.getFormattedMessage(any())).thenReturn("Blocked!");
+    when(messageHandler.getString(anyString())).thenReturn(mockVpnString);
 
-        when(playerExecutor.getPlayer(any(UUID.class))).thenReturn(Optional.empty());
-        when(config.getPrefixWhitelists()).thenReturn(java.util.Collections.emptyList());
-        when(config.getCountryList()).thenReturn(java.util.Collections.emptyList());
-        when(config.isKickPlayers()).thenReturn(true);
-        when(config.getKickMessage()).thenReturn("Blocked!");
+    when(vpnExecutor.checkIp(anyString()))
+        .thenReturn(
+            CompletableFuture.completedFuture(
+                VPNResponse.builder()
+                    .success(true)
+                    .proxy(false)
+                    .ip("127.0.0.1")
+                    .method("N/A")
+                    .countryName("N/A")
+                    .city("N/A")
+                    .build()));
 
-        VpnString mockVpnString = mock(VpnString.class);
-        when(mockVpnString.getFormattedMessage(any())).thenReturn("Blocked!");
-        when(messageHandler.getString(anyString())).thenReturn(mockVpnString);
+    // Use reflection to set the private static INSTANCE field
+    Field instanceField = AntiVPN.class.getDeclaredField("INSTANCE");
+    instanceField.setAccessible(true);
+    instanceField.set(null, antiVPN);
 
-        when(vpnExecutor.checkIp(anyString())).thenReturn(CompletableFuture.completedFuture(
-                VPNResponse.builder().success(true).proxy(false).ip("127.0.0.1")
-                        .method("N/A").countryName("N/A").city("N/A").build()
-        ));
+    listener = new BungeeListener();
+  }
 
-        // Use reflection to set the private static INSTANCE field
-        Field instanceField = AntiVPN.class.getDeclaredField("INSTANCE");
-        instanceField.setAccessible(true);
-        instanceField.set(null, antiVPN);
+  @AfterEach
+  public void tearDown() throws Exception {
+    // Reset the singleton
+    Field instanceField = AntiVPN.class.getDeclaredField("INSTANCE");
+    instanceField.setAccessible(true);
+    instanceField.set(null, null);
+  }
 
-        listener = new BungeeListener();
-    }
+  @Test
+  public void testPreLoginEventAllowed() {
+    PreLoginEvent event = mock(PreLoginEvent.class);
+    PendingConnection connection = mock(PendingConnection.class);
 
-    @AfterEach
-    public void tearDown() throws Exception {
-        // Reset the singleton
-        Field instanceField = AntiVPN.class.getDeclaredField("INSTANCE");
-        instanceField.setAccessible(true);
-        instanceField.set(null, null);
-    }
+    when(event.getConnection()).thenReturn(connection);
+    when(connection.getUniqueId()).thenReturn(UUID.randomUUID());
+    when(connection.getName()).thenReturn("TestPlayer");
+    when(connection.getSocketAddress()).thenReturn(new InetSocketAddress("127.0.0.1", 12345));
 
-    @Test
-    public void testPreLoginEventAllowed()  {
-        PreLoginEvent event = mock(PreLoginEvent.class);
-        PendingConnection connection = mock(PendingConnection.class);
+    listener.onListener(event);
 
-        when(event.getConnection()).thenReturn(connection);
-        when(connection.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(connection.getName()).thenReturn("TestPlayer");
-        when(connection.getSocketAddress()).thenReturn(new InetSocketAddress("127.0.0.1", 12345));
+    verify(event, never()).setCancelled(true);
+  }
 
-        listener.onListener(event);
+  @Test
+  public void testPreLoginEventBlocked() throws NoSuchFieldException, IllegalAccessException {
+    PreLoginEvent event = mock(PreLoginEvent.class);
+    PendingConnection connection = mock(PendingConnection.class);
 
-        verify(event, never()).setCancelled(true);
-    }
+    UUID uuid = UUID.randomUUID();
+    when(event.getConnection()).thenReturn(connection);
+    when(connection.getUniqueId()).thenReturn(uuid);
+    when(connection.getName()).thenReturn("ProxyPlayer");
+    when(connection.getSocketAddress()).thenReturn(new InetSocketAddress("1.1.1.1", 12345));
 
-    @Test
-    public void testPreLoginEventBlocked() {
-        PreLoginEvent event = mock(PreLoginEvent.class);
-        PendingConnection connection = mock(PendingConnection.class);
+    // Mock proxy response
+    mockCache();
 
-        UUID uuid = UUID.randomUUID();
-        when(event.getConnection()).thenReturn(connection);
-        when(connection.getUniqueId()).thenReturn(uuid);
-        when(connection.getName()).thenReturn("ProxyPlayer");
-        when(connection.getSocketAddress()).thenReturn(new InetSocketAddress("1.1.1.1", 12345));
+    listener.onListener(event);
 
-        // Mock proxy response
-        when(vpnExecutor.checkIp("1.1.1.1")).thenReturn(CompletableFuture.completedFuture(
-                VPNResponse.builder().success(true).proxy(true).ip("1.1.1.1")
-                        .method("N/A").countryName("N/A").countryCode("N/A").city("N/A").build()
-        ));
-
-        listener.onListener(event);
-
-        verify(event).setCancelled(true);
-        verify(event).setReason(any());
-    }
+    verify(event).setCancelled(true);
+    verify(event).setReason(any());
+  }
 }
