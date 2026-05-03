@@ -21,31 +21,34 @@ import dev.brighten.antivpn.database.DatabaseException;
 import dev.brighten.antivpn.database.VPNDatabase;
 import dev.brighten.antivpn.database.local.version.First;
 import dev.brighten.antivpn.database.sql.utils.Query;
-
 import java.sql.SQLException;
 
 public class MySQLFirst extends First {
 
-    @Override
-    public void update(VPNDatabase database) throws DatabaseException {
-        try(var statement = Query.prepare("select `DATA_TYPE` from INFORMATION_SCHEMA.COLUMNS " +
-                "WHERE table_name = 'responses' AND COLUMN_NAME = 'isp';")) {
-            statement.execute(set -> {
-                if(set.getObject("DATA_TYPE").toString().contains("varchar")) {
-                    AntiVPN.getInstance().getExecutor().log("Using old database format for storing responses! " +
-                            "Dropping table and creating a new one...");
-                    try(var state = Query.prepare("drop table `responses`")) {
-                        if(state.execute() > 0) {
-                            AntiVPN.getInstance().getExecutor().log("Successfully dropped table!");
-                        }
-                    }
-
-
+  @Override
+  public void update(VPNDatabase database) throws DatabaseException {
+    try (var statement =
+        Query.prepare(
+            "select `DATA_TYPE` from INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE table_name = 'responses' AND COLUMN_NAME = 'isp';")) {
+      statement.execute(
+          set -> {
+            if (set.getObject("DATA_TYPE").toString().contains("varchar")) {
+              AntiVPN.getInstance()
+                  .getExecutor()
+                  .log(
+                      "Using old database format for storing responses! "
+                          + "Dropping table and creating a new one...");
+              try (var state = Query.prepare("drop table `responses`")) {
+                if (state.execute() > 0) {
+                  AntiVPN.getInstance().getExecutor().log("Successfully dropped table!");
                 }
-            });
-        } catch (SQLException e) {
-            throw new DatabaseException("Could not update MySQL database", e);
-        }
-        super.update(database);
+              }
+            }
+          });
+    } catch (SQLException e) {
+      throw new DatabaseException("Could not update MySQL database", e);
     }
+    super.update(database);
+  }
 }

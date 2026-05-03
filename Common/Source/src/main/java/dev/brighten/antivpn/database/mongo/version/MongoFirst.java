@@ -26,27 +26,27 @@ import org.bson.Document;
 
 public class MongoFirst implements Version<MongoVPN> {
 
-    @Override
-    public void update(MongoVPN database) throws DatabaseException {
-        if(database.settingsDocument.listIndexes().first() == null) {
-            AntiVPN.getInstance().getExecutor().log("Created index for settings collection!");
-            database.settingsDocument.createIndex(Indexes.ascending("ip"));
-            database.settingsDocument.createIndex(Indexes.ascending("setting"));
-        }
-        var versionCollect = database.antivpnDatabase.getCollection("version");
-
-        versionCollect.insertOne(new Document("version", versionNumber()));
+  @Override
+  public void update(MongoVPN database) throws DatabaseException {
+    if (database.settingsDocument.listIndexes().first() == null) {
+      AntiVPN.getInstance().getExecutor().log("Created index for settings collection!");
+      database.settingsDocument.createIndex(Indexes.ascending("ip"));
+      database.settingsDocument.createIndex(Indexes.ascending("setting"));
     }
+    var versionCollect = database.antivpnDatabase.getCollection("version");
 
-    @Override
-    public int versionNumber() {
-        return 0;
-    }
+    versionCollect.insertOne(new Document("version", versionNumber()));
+  }
 
-    @Override
-    public boolean needsUpdate(MongoVPN database) {
-        var versionCollect = database.antivpnDatabase.getCollection("version");
+  @Override
+  public int versionNumber() {
+    return 0;
+  }
 
-        return versionCollect.find(Filters.eq("version", versionNumber())).first() == null;
-    }
+  @Override
+  public boolean needsUpdate(MongoVPN database) {
+    var versionCollect = database.antivpnDatabase.getCollection("version");
+
+    return versionCollect.find(Filters.eq("version", versionNumber())).first() == null;
+  }
 }

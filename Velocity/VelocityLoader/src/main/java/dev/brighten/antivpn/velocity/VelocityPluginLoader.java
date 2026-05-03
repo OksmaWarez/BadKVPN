@@ -25,56 +25,60 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import dev.brighten.antivpn.loader.JarInJarClassLoader;
 import dev.brighten.antivpn.loader.LoaderBootstrap;
-import org.bstats.velocity.Metrics;
-
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.bstats.velocity.Metrics;
 
-@Plugin(id = "kaurivpn", name = "KauriVPN", version = "1.7.1", authors = {"funkemunky"})
+@Plugin(
+    id = "kaurivpn",
+    name = "KauriVPN",
+    version = "1.7.1",
+    authors = {"funkemunky"})
 public class VelocityPluginLoader {
 
-    private static final String JAR_NAME = "antivpn-velocity.jarinjar";
-    private static final String SOURCE_NAME = "antivpn-source.jarinjar";
-    private static final String BOOTSTRAP_CLASS = "dev.brighten.antivpn.velocity.VelocityPlugin";
+  private static final String JAR_NAME = "antivpn-velocity.jarinjar";
+  private static final String SOURCE_NAME = "antivpn-source.jarinjar";
+  private static final String BOOTSTRAP_CLASS = "dev.brighten.antivpn.velocity.VelocityPlugin";
 
-    private final LoaderBootstrap plugin;
-    private final ClassLoader pluginClassLoader;
+  private final LoaderBootstrap plugin;
+  private final ClassLoader pluginClassLoader;
 
-    @Inject
-    public VelocityPluginLoader(ProxyServer server, Logger logger, @DataDirectory Path path, Metrics.Factory metricsFactory) {
-        Map<Class<?>, Object> instances = new HashMap<>();
-        instances.put(ProxyServer.class, server);
-        instances.put(Logger.class, logger);
-        instances.put(Path.class, path);
-        instances.put(String.class, metricsFactory);
-        instances.put(LoaderBootstrap.class, this);
-        JarInJarClassLoader loader = new JarInJarClassLoader(getClass().getClassLoader(), JAR_NAME, SOURCE_NAME);
-        this.pluginClassLoader = loader;
-        this.plugin = loader.instantiatePlugin(BOOTSTRAP_CLASS, Map.class, instances);
-        runWithPluginClassLoader(() -> plugin.onLoad(path.toFile()));
+  @Inject
+  public VelocityPluginLoader(
+      ProxyServer server, Logger logger, @DataDirectory Path path, Metrics.Factory metricsFactory) {
+    Map<Class<?>, Object> instances = new HashMap<>();
+    instances.put(ProxyServer.class, server);
+    instances.put(Logger.class, logger);
+    instances.put(Path.class, path);
+    instances.put(String.class, metricsFactory);
+    instances.put(LoaderBootstrap.class, this);
+    JarInJarClassLoader loader =
+        new JarInJarClassLoader(getClass().getClassLoader(), JAR_NAME, SOURCE_NAME);
+    this.pluginClassLoader = loader;
+    this.plugin = loader.instantiatePlugin(BOOTSTRAP_CLASS, Map.class, instances);
+    runWithPluginClassLoader(() -> plugin.onLoad(path.toFile()));
+  }
+
+  @Subscribe
+  public void onInit(ProxyInitializeEvent event) {
+    runWithPluginClassLoader(plugin::onEnable);
+  }
+
+  @Subscribe
+  public void onDisable(ProxyShutdownEvent event) {
+    runWithPluginClassLoader(plugin::onDisable);
+  }
+
+  private void runWithPluginClassLoader(Runnable action) {
+    Thread thread = Thread.currentThread();
+    ClassLoader previousClassLoader = thread.getContextClassLoader();
+    thread.setContextClassLoader(pluginClassLoader);
+    try {
+      action.run();
+    } finally {
+      thread.setContextClassLoader(previousClassLoader);
     }
-
-    @Subscribe
-    public void onInit(ProxyInitializeEvent event) {
-        runWithPluginClassLoader(plugin::onEnable);
-    }
-
-    @Subscribe
-    public void onDisable(ProxyShutdownEvent event) {
-        runWithPluginClassLoader(plugin::onDisable);
-    }
-
-    private void runWithPluginClassLoader(Runnable action) {
-        Thread thread = Thread.currentThread();
-        ClassLoader previousClassLoader = thread.getContextClassLoader();
-        thread.setContextClassLoader(pluginClassLoader);
-        try {
-            action.run();
-        } finally {
-            thread.setContextClassLoader(previousClassLoader);
-        }
-    }
-
+  }
 }

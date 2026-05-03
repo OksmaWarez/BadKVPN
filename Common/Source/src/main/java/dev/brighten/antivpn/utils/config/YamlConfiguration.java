@@ -16,6 +16,10 @@
 
 package dev.brighten.antivpn.utils.config;
 
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -25,173 +29,161 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-public class YamlConfiguration extends ConfigurationProvider
-{
+public class YamlConfiguration extends ConfigurationProvider {
 
-    private final ThreadLocal<Yaml> yaml = new ThreadLocal<Yaml>()
-    {
+  private final ThreadLocal<Yaml> yaml =
+      new ThreadLocal<Yaml>() {
         @Override
-        protected Yaml initialValue()
-        {
-            DumperOptions options = new DumperOptions();
-            options.setDefaultFlowStyle( DumperOptions.FlowStyle.BLOCK );
-            Representer representer = new Representer(options)
-            {
+        protected Yaml initialValue() {
+          DumperOptions options = new DumperOptions();
+          options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+          Representer representer =
+              new Representer(options) {
                 {
-                    representers.put( Configuration.class, data -> represent( ( (Configuration) data ).self ));
+                  representers.put(
+                      Configuration.class, data -> represent(((Configuration) data).self));
                 }
-            };
+              };
 
-            representer.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-            return new Yaml( new Constructor(new LoaderOptions()), representer, options );
+          representer.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+          return new Yaml(new Constructor(new LoaderOptions()), representer, options);
         }
-    };
+      };
 
-    @Override
-    public void save(Configuration config, File file) throws IOException
-    {
-        try ( Writer writer = new OutputStreamWriter( new FileOutputStream( file ), StandardCharsets.UTF_8 ) )
-        {
-            save( config, writer );
+  @Override
+  public void save(Configuration config, File file) throws IOException {
+    try (Writer writer =
+        new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+      save(config, writer);
+    }
+  }
+
+  @Override
+  public void save(Configuration config, Writer writer) {
+    String contents = this.yaml.get().dump(config.self);
+    if (contents.equals("{}\n")) {
+      contents = "";
+    }
+
+    List<String> list = new ArrayList<>();
+    Collections.addAll(list, contents.split("\n"));
+
+    int currentLayer = 0;
+    StringBuilder currentPath = new StringBuilder();
+
+    StringBuilder sb = new StringBuilder();
+
+    int lineNumber = 0;
+    for (Iterator<String> iterator = list.iterator(); iterator.hasNext(); lineNumber++) {
+      String line = iterator.next();
+      sb.append(line);
+      sb.append('\n');
+
+      if (!line.isEmpty()) {
+        if (line.contains(":")) {
+
+          int layerFromLine = config.getLayerFromLine(line, lineNumber);
+
+          if (layerFromLine < currentLayer) {
+            currentPath =
+                new StringBuilder(
+                    config.regressPathBy(currentLayer - layerFromLine, currentPath.toString()));
+          }
+
+          String key = config.getKeyFromLine(line);
+
+          if (currentLayer == 0) {
+            currentPath = new StringBuilder(key);
+          } else {
+            currentPath.append("." + key);
+          }
+
+          String path = currentPath.toString();
+          if (config.comments.containsKey(path)) {
+            config
+                .comments
+                .get(path)
+                .forEach(
+                    string -> {
+                      sb.append(string);
+                      sb.append('\n');
+                    });
+          }
         }
+      }
     }
 
-    @Override
-    public void save(Configuration config, Writer writer)
-    {
-        String contents = this.yaml.get().dump(config.self);
-        if (contents.equals("{}\n")) {
-            contents = "";
-        }
-
-        List<String> list = new ArrayList<>();
-        Collections.addAll(list, contents.split("\n"));
-
-        int currentLayer = 0;
-        StringBuilder currentPath = new StringBuilder();
-
-        StringBuilder sb = new StringBuilder();
-
-        int lineNumber = 0;
-        for(Iterator<String> iterator = list.iterator(); iterator.hasNext(); lineNumber++) {
-            String line = iterator.next();
-            sb.append(line);
-            sb.append('\n');
-
-            if (!line.isEmpty()) {
-                if (line.contains(":")) {
-
-                    int layerFromLine = config.getLayerFromLine(line, lineNumber);
-
-                    if (layerFromLine < currentLayer) {
-                        currentPath = new StringBuilder(config.regressPathBy(currentLayer - layerFromLine, currentPath.toString()));
-                    }
-
-                    String key = config.getKeyFromLine(line);
-
-                    if (currentLayer == 0) {
-                        currentPath = new StringBuilder(key);
-                    } else {
-                        currentPath.append("." + key);
-                    }
-
-                    String path = currentPath.toString();
-                    if (config.comments.containsKey(path)) {
-                        config.comments.get(path).forEach(string -> {
-                            sb.append(string);
-                            sb.append('\n');
-                        });
-                    }
-                }
-            }
-        }
-
-        try {
-            writer.write(sb.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    try {
+      writer.write(sb.toString());
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    @Override
-    public Configuration load(File file) throws IOException
-    {
-        return load( file, null );
+  }
+
+  @Override
+  public Configuration load(File file) throws IOException {
+    return load(file, null);
+  }
+
+  @Override
+  public Configuration load(File file, Configuration defaults) throws IOException {
+    try (FileInputStream is = new FileInputStream(file)) {
+      return load(is, defaults);
+    }
+  }
+
+  @Override
+  public Configuration load(Reader reader) {
+    return load(reader, null);
+  }
+
+  @SneakyThrows
+  @Override
+  public Configuration load(Reader reader, Configuration defaults) {
+    BufferedReader input =
+        reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
+    StringBuilder builder = new StringBuilder();
+
+    String line;
+    try {
+      while ((line = input.readLine()) != null) {
+        builder.append(line);
+        builder.append('\n');
+      }
+    } finally {
+      input.close();
     }
 
-    @Override
-    public Configuration load(File file, Configuration defaults) throws IOException
-    {
-        try ( FileInputStream is = new FileInputStream( file ) )
-        {
-            return load( is, defaults );
-        }
-    }
+    return load(builder.toString(), defaults);
+  }
 
-    @Override
-    public Configuration load(Reader reader)
-    {
-        return load( reader, null );
-    }
+  @Override
+  public Configuration load(InputStream is) {
+    return this.load(new InputStreamReader(is, Charset.defaultCharset()));
+  }
 
-    @SneakyThrows
-    @Override
-    public Configuration load(Reader reader, Configuration defaults)
-    {
-        BufferedReader input = reader instanceof BufferedReader ? (BufferedReader)reader : new BufferedReader(reader);
-        StringBuilder builder = new StringBuilder();
+  @Override
+  public Configuration load(InputStream is, Configuration defaults) {
+    return this.load(new InputStreamReader(is, Charset.defaultCharset()), defaults);
+  }
 
-        String line;
-        try {
-            while((line = input.readLine()) != null) {
-                builder.append(line);
-                builder.append('\n');
-            }
-        } finally {
-            input.close();
-        }
+  @Override
+  public Configuration load(String string) {
+    return load(string, null);
+  }
 
+  @Override
+  @SuppressWarnings("unchecked")
+  public Configuration load(String contents, Configuration defaults) {
+    Map<String, Object> map;
+    LoaderOptions loaderOptions = new LoaderOptions();
+    loaderOptions.setMaxAliasesForCollections(2147483647);
+    map = this.yaml.get().loadAs(contents, LinkedHashMap.class);
 
-        return load(builder.toString(), defaults);
-    }
+    Configuration config = new Configuration(map, defaults);
+    config.loadFromString(contents);
 
-    @Override
-    public Configuration load(InputStream is)
-    {
-        return this.load(new InputStreamReader(is, Charset.defaultCharset()));
-    }
-
-    @Override
-    public Configuration load(InputStream is, Configuration defaults)
-    {
-        return this.load(new InputStreamReader(is, Charset.defaultCharset()), defaults);
-    }
-
-    @Override
-    public Configuration load(String string)
-    {
-        return load( string, null );
-    }
-
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Configuration load(String contents, Configuration defaults)
-    {
-        Map<String, Object> map;
-        LoaderOptions loaderOptions = new LoaderOptions();
-        loaderOptions.setMaxAliasesForCollections(2147483647);
-        map = this.yaml.get().loadAs(contents, LinkedHashMap.class);
-
-        Configuration config = new Configuration( map, defaults );
-        config.loadFromString(contents);
-
-        return config;
-    }
-
+    return config;
+  }
 }

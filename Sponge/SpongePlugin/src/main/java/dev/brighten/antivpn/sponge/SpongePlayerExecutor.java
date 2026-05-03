@@ -20,67 +20,65 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.brighten.antivpn.api.APIPlayer;
 import dev.brighten.antivpn.api.PlayerExecutor;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.server.ServerPlayer;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 public class SpongePlayerExecutor implements PlayerExecutor {
 
-    private final Cache<UUID, SpongePlayer> playerCache = Caffeine.newBuilder().maximumSize(10000)
-            .expireAfterAccess(30, TimeUnit.MINUTES)
-            .build();
+  private final Cache<UUID, SpongePlayer> playerCache =
+      Caffeine.newBuilder().maximumSize(10000).expireAfterAccess(30, TimeUnit.MINUTES).build();
 
-    @Override
-    public Optional<APIPlayer> getPlayer(String name) {
-        Optional<ServerPlayer> serverPlayer = Sponge.server().player(name);
+  @Override
+  public Optional<APIPlayer> getPlayer(String name) {
+    Optional<ServerPlayer> serverPlayer = Sponge.server().player(name);
 
-        return serverPlayer.map(SpongePlayer::new);
+    return serverPlayer.map(SpongePlayer::new);
+  }
+
+  @Override
+  public Optional<APIPlayer> getPlayer(UUID uuid) {
+    SpongePlayer cachedPlayer = playerCache.getIfPresent(uuid);
+
+    if (cachedPlayer != null) {
+      return Optional.of(cachedPlayer);
     }
 
-    @Override
-    public Optional<APIPlayer> getPlayer(UUID uuid) {
-        SpongePlayer cachedPlayer = playerCache.getIfPresent(uuid);
+    Optional<ServerPlayer> serverPlayer = Sponge.server().player(uuid);
 
-        if(cachedPlayer != null) {
-            return Optional.of(cachedPlayer);
-        }
+    Optional<APIPlayer> player = serverPlayer.map(SpongePlayer::new);
 
-        Optional<ServerPlayer> serverPlayer = Sponge.server().player(uuid);
+    player.ifPresent(value -> playerCache.put(uuid, (SpongePlayer) value));
 
-        Optional<APIPlayer> player = serverPlayer.map(SpongePlayer::new);
+    return player;
+  }
 
-        player.ifPresent(value -> playerCache.put(uuid, (SpongePlayer) value));
+  @Override
+  public void unloadPlayer(UUID uuid) {
+    playerCache.invalidate(uuid);
+  }
 
-        return player;
-    }
+  @Override
+  public List<APIPlayer> getOnlinePlayers() {
+    if (!Sponge.game().isServerAvailable()) return Collections.emptyList();
+    return Sponge.server().onlinePlayers().stream()
+        .map(
+            pl -> {
+              SpongePlayer cachedPlayer = playerCache.getIfPresent(pl.uniqueId());
 
-    @Override
-    public void unloadPlayer(UUID uuid) {
-        playerCache.invalidate(uuid);
-    }
+              if (cachedPlayer != null) {
+                return cachedPlayer;
+              }
 
-    @Override
-    public List<APIPlayer> getOnlinePlayers() {
-        if(!Sponge.game().isServerAvailable()) return Collections.emptyList();
-        return Sponge.server().onlinePlayers()
-                .stream()
-                .map(pl -> {
-                    SpongePlayer cachedPlayer = playerCache.getIfPresent(pl.uniqueId());
+              SpongePlayer player = new SpongePlayer(pl);
+              playerCache.put(pl.uniqueId(), player);
 
-                    if(cachedPlayer != null) {
-                        return cachedPlayer;
-                    }
-
-                    SpongePlayer player = new SpongePlayer(pl);
-                    playerCache.put(pl.uniqueId(), player);
-
-                    return (APIPlayer) player;
-                })
-                .toList();
-    }
+              return (APIPlayer) player;
+            })
+        .toList();
+  }
 }

@@ -23,30 +23,33 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BukkitPlayer extends APIPlayer {
 
-    private final Player player;
+  private final Player player;
 
-    public BukkitPlayer(Player player) {
-        super(player.getUniqueId(), player.getName(), player.getAddress() != null ? player.getAddress().getAddress() : null);
+  public BukkitPlayer(Player player) {
+    super(
+        player.getUniqueId(),
+        player.getName(),
+        player.getAddress() != null ? player.getAddress().getAddress() : null);
 
-        this.player = player;
-    }
+    this.player = player;
+  }
 
-    @Override
-    public void sendMessage(String message) {
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-    }
+  @Override
+  public void sendMessage(String message) {
+    player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+  }
 
-    @Override
-    public void kickPlayer(String reason) {
-        new BukkitRunnable() {
-            public void run() {
-                player.kickPlayer(ChatColor.translateAlternateColorCodes('&', reason));
-            }
-        }.runTask(BukkitPlugin.pluginInstance.getPlugin());
-    }
+  @Override
+  public void kickPlayer(String reason) {
+    new BukkitRunnable() {
+      public void run() {
+        player.kickPlayer(ChatColor.translateAlternateColorCodes('&', reason));
+      }
+    }.runTask(BukkitPlugin.pluginInstance.getPlugin());
+  }
 
-    @Override
-    public boolean hasPermission(String permission) {
-        return player.hasPermission(permission);
-    }
+  @Override
+  public boolean hasPermission(String permission) {
+    return player.hasPermission(permission);
+  }
 }

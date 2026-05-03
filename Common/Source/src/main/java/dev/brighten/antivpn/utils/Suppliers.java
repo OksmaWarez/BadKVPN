@@ -16,12 +16,12 @@
 
 package dev.brighten.antivpn.utils;
 
-import java.io.Serial;
-import java.io.Serializable;
-
 import static dev.brighten.antivpn.utils.NullnessCasts.uncheckedCastNullableTToT;
 import static dev.brighten.antivpn.utils.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * Useful suppliers.
@@ -33,115 +33,114 @@ import static java.util.Objects.requireNonNull;
  * @since 2.0
  */
 public final class Suppliers {
-    private Suppliers() {}
+  private Suppliers() {}
 
-    /**
-     * Returns a supplier which caches the instance retrieved during the first call to {@code get()}
-     * and returns that value on later calls to {@code get()}. See: <a
-     * href="http://en.wikipedia.org/wiki/Memoization">memoization</a>
-     *
-     * <p>The returned supplier is thread-safe. The delegate's {@code get()} method will be invoked at
-     * most once unless the underlying {@code get()} throws an exception. The supplier's serialized
-     * form does not contain the cached value, which will be recalculated when {@code get()} is called
-     * on the reserialized instance.
-     *
-     * <p>When the underlying delegate throws an exception then this memorizing supplier will keep
-     * delegating calls until it returns valid data.
-     *
-     * <p>If {@code delegate} is an instance created by an earlier call to {@code memoize}, it is
-     * returned directly.
-     */
-    public static <T> Supplier<T> memoize(Supplier<T> delegate) {
-        if (delegate instanceof NonSerializableMemoizingSupplier
-                || delegate instanceof MemoizingSupplier) {
-            return delegate;
-        }
-        return delegate instanceof Serializable
-                ? new MemoizingSupplier<>(delegate)
-                : new NonSerializableMemoizingSupplier<>(delegate);
+  /**
+   * Returns a supplier which caches the instance retrieved during the first call to {@code get()}
+   * and returns that value on later calls to {@code get()}. See: <a
+   * href="http://en.wikipedia.org/wiki/Memoization">memoization</a>
+   *
+   * <p>The returned supplier is thread-safe. The delegate's {@code get()} method will be invoked at
+   * most once unless the underlying {@code get()} throws an exception. The supplier's serialized
+   * form does not contain the cached value, which will be recalculated when {@code get()} is called
+   * on the reserialized instance.
+   *
+   * <p>When the underlying delegate throws an exception then this memorizing supplier will keep
+   * delegating calls until it returns valid data.
+   *
+   * <p>If {@code delegate} is an instance created by an earlier call to {@code memoize}, it is
+   * returned directly.
+   */
+  public static <T> Supplier<T> memoize(Supplier<T> delegate) {
+    if (delegate instanceof NonSerializableMemoizingSupplier
+        || delegate instanceof MemoizingSupplier) {
+      return delegate;
+    }
+    return delegate instanceof Serializable
+        ? new MemoizingSupplier<>(delegate)
+        : new NonSerializableMemoizingSupplier<>(delegate);
+  }
+
+  static class MemoizingSupplier<T> implements Supplier<T>, Serializable {
+    final Supplier<T> delegate;
+    transient volatile boolean initialized;
+    // "value" does not need to be volatile; visibility piggy-backs
+    // on volatile read of "initialized".
+    transient T value;
+
+    MemoizingSupplier(Supplier<T> delegate) {
+      this.delegate = checkNotNull(delegate);
     }
 
-    static class MemoizingSupplier<T> implements Supplier<T>, Serializable {
-        final Supplier<T> delegate;
-        transient volatile boolean initialized;
-        // "value" does not need to be volatile; visibility piggy-backs
-        // on volatile read of "initialized".
-        transient T value;
-
-        MemoizingSupplier(Supplier<T> delegate) {
-            this.delegate = checkNotNull(delegate);
+    @Override
+    public T get() {
+      // A 2-field variant of Double Checked Locking.
+      if (!initialized) {
+        synchronized (this) {
+          if (!initialized) {
+            T t = delegate.get();
+            value = t;
+            initialized = true;
+            return t;
+          }
         }
-
-        @Override
-        public T get() {
-            // A 2-field variant of Double Checked Locking.
-            if (!initialized) {
-                synchronized (this) {
-                    if (!initialized) {
-                        T t = delegate.get();
-                        value = t;
-                        initialized = true;
-                        return t;
-                    }
-                }
-            }
-            // This is safe because we checked `initialized.`
-            return uncheckedCastNullableTToT(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Suppliers.memoize("
-                    + (initialized ? "<supplier that returned " + value + ">" : delegate)
-                    + ")";
-        }
-
-        @Serial
-        private static final long serialVersionUID = 0;
+      }
+      // This is safe because we checked `initialized.`
+      return uncheckedCastNullableTToT(value);
     }
 
-    static class NonSerializableMemoizingSupplier<T> implements Supplier<T> {
-        volatile Supplier<T> delegate;
-        volatile boolean initialized;
-        // "value" does not need to be volatile; visibility piggy-backs
-        // on volatile read of "initialized".
-        T value;
-
-        NonSerializableMemoizingSupplier(Supplier<T> delegate) {
-            this.delegate = checkNotNull(delegate);
-        }
-
-        @Override
-        public T get() {
-            // A 2-field variant of Double Checked Locking.
-            if (!initialized) {
-                synchronized (this) {
-                    if (!initialized) {
-                        /*
-                         * requireNonNull is safe because we read and write `delegate` under synchronization.
-                         *
-                         * TODO(cpovirk): To avoid having to check for null, replace `delegate` with a singleton
-                         * `Supplier` that always throws an exception.
-                         */
-                        T t = requireNonNull(delegate).get();
-                        value = t;
-                        initialized = true;
-                        // Release the delegate to GC.
-                        delegate = null;
-                        return t;
-                    }
-                }
-            }
-            // This is safe because we checked `initialized.`
-            return uncheckedCastNullableTToT(value);
-        }
-
-        @Override
-        public String toString() {
-            Supplier<T> delegate = this.delegate;
-            return "Suppliers.memoize("
-                    + (delegate == null ? "<supplier that returned " + value + ">" : delegate)
-                    + ")";
-        }
+    @Override
+    public String toString() {
+      return "Suppliers.memoize("
+          + (initialized ? "<supplier that returned " + value + ">" : delegate)
+          + ")";
     }
+
+    @Serial private static final long serialVersionUID = 0;
+  }
+
+  static class NonSerializableMemoizingSupplier<T> implements Supplier<T> {
+    volatile Supplier<T> delegate;
+    volatile boolean initialized;
+    // "value" does not need to be volatile; visibility piggy-backs
+    // on volatile read of "initialized".
+    T value;
+
+    NonSerializableMemoizingSupplier(Supplier<T> delegate) {
+      this.delegate = checkNotNull(delegate);
+    }
+
+    @Override
+    public T get() {
+      // A 2-field variant of Double Checked Locking.
+      if (!initialized) {
+        synchronized (this) {
+          if (!initialized) {
+            /*
+             * requireNonNull is safe because we read and write `delegate` under synchronization.
+             *
+             * TODO(cpovirk): To avoid having to check for null, replace `delegate` with a singleton
+             * `Supplier` that always throws an exception.
+             */
+            T t = requireNonNull(delegate).get();
+            value = t;
+            initialized = true;
+            // Release the delegate to GC.
+            delegate = null;
+            return t;
+          }
+        }
+      }
+      // This is safe because we checked `initialized.`
+      return uncheckedCastNullableTToT(value);
+    }
+
+    @Override
+    public String toString() {
+      Supplier<T> delegate = this.delegate;
+      return "Suppliers.memoize("
+          + (delegate == null ? "<supplier that returned " + value + ">" : delegate)
+          + ")";
+    }
+  }
 }

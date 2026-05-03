@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 public @interface Relocate {
-    String from();
-    String to();
+  String from();
+
+  String to();
 }

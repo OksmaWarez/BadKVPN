@@ -47,21 +47,10 @@ allprojects {
     spotless {
         java {
             target 'src/**/*.java'
+            removeUnusedImports()
+            googleJavaFormat()
+            cleanthat()
 
-            def ideaFormatter = idea()
-            if (rootProject.hasProperty('spotlessIdeaBinary')) {
-                ideaFormatter.binaryPath(rootProject.property('spotlessIdeaBinary').toString())
-            }
-            if (rootProject.hasProperty('spotlessIdeaCodeStyle')) {
-                ideaFormatter.codeStyleSettingsPath(rootProject.file(rootProject.property('spotlessIdeaCodeStyle').toString()).absolutePath)
-            }
-
-            trimTrailingWhitespace()
-            endWithNewline()
-        }
-
-        format 'gradle', {
-            target '*.gradle'
             trimTrailingWhitespace()
             endWithNewline()
         }
