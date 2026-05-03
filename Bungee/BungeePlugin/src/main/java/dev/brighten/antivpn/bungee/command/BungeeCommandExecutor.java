@@ -45,7 +45,7 @@ public class BungeeCommandExecutor implements CommandExecutor {
 
     @Override
     public Optional<APIPlayer> getPlayer() {
-        if(!isPlayer()) return Optional.empty();
+        if (!isPlayer()) return Optional.empty();
 
         return AntiVPN.getInstance().getPlayerExecutor().getPlayer(((ProxiedPlayer) sender).getUniqueId());
     }

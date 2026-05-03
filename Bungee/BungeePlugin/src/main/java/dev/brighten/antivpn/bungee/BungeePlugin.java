@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 public class BungeePlugin implements LoaderBootstrap {
 
     public static BungeePlugin pluginInstance;
-    
+
     @Getter
     private File dataFolder;
 
@@ -64,7 +64,7 @@ public class BungeePlugin implements LoaderBootstrap {
         ProxyServer.getInstance().getLogger().info("Starting AntiVPN services...");
         AntiVPN.start(new BungeeListener(), new BungeePlayerExecutor(), getDataFolder());
 
-        if(AntiVPN.getInstance().getVpnConfig().metrics()) {
+        if (AntiVPN.getInstance().getVpnConfig().metrics()) {
             ProxyServer.getInstance().getLogger().info("Starting bStats metrics...");
             Metrics metrics = new Metrics(getPlugin(), 12616);
             metrics.addCustomChart(new SimplePie("database_used", this::getDatabaseType));
@@ -85,11 +85,11 @@ public class BungeePlugin implements LoaderBootstrap {
 
     private String getDatabaseType() {
         VPNDatabase database = AntiVPN.getInstance().getDatabase();
-        if(database instanceof MySqlVPN) {
+        if (database instanceof MySqlVPN) {
             return "MySQL";
-        } else if(database instanceof H2VPN) {
+        } else if (database instanceof H2VPN) {
             return "H2";
-        } else if(database instanceof MongoVPN) {
+        } else if (database instanceof MongoVPN) {
             return "MongoDB";
         } else {
             return "No-Database";

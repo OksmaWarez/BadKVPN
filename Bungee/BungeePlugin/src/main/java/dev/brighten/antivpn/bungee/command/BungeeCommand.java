@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 public class BungeeCommand extends Command implements TabExecutor {
 
     private final dev.brighten.antivpn.command.Command command;
+
     public BungeeCommand(dev.brighten.antivpn.command.Command command) {
         super(command.name(), command.permission(), command.aliases());
 
@@ -38,7 +39,7 @@ public class BungeeCommand extends Command implements TabExecutor {
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        if(!sender.hasPermission("antivpn.command.*")
+        if (!sender.hasPermission("antivpn.command.*")
                 && !sender.hasPermission(command.permission())) {
             sender.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&',
                     AntiVPN.getInstance().getMessageHandler().getString("no-permission").getMessage())));
@@ -47,11 +48,11 @@ public class BungeeCommand extends Command implements TabExecutor {
 
         val children = command.children();
 
-        if(children.length > 0 && args.length > 0) {
+        if (children.length > 0 && args.length > 0) {
             for (dev.brighten.antivpn.command.Command child : children) {
-                if(child.name().equalsIgnoreCase(args[0]) || Arrays.stream(child.aliases())
+                if (child.name().equalsIgnoreCase(args[0]) || Arrays.stream(child.aliases())
                         .anyMatch(alias -> alias.equalsIgnoreCase(args[0]))) {
-                    if(!sender.hasPermission("antivpn.command.*")
+                    if (!sender.hasPermission("antivpn.command.*")
                             && !sender.hasPermission(child.permission())) {
                         sender.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&',
                                 AntiVPN.getInstance().getMessageHandler().getString("no-permission").getMessage())));
@@ -61,7 +62,7 @@ public class BungeeCommand extends Command implements TabExecutor {
                     sender.sendMessage(TextComponent
                             .fromLegacyText(ChatColor
                                     .translateAlternateColorCodes('&',
-                                            child.execute(new BungeeCommandExecutor(sender),  IntStream
+                                            child.execute(new BungeeCommandExecutor(sender), IntStream
                                                     .range(0, args.length - 1)
                                                     .mapToObj(i -> args[i + 1]).toArray(String[]::new)))));
                     return;
@@ -80,9 +81,9 @@ public class BungeeCommand extends Command implements TabExecutor {
     public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
         val children = command.children();
 
-        if(children.length > 0 && args.length > 0) {
+        if (children.length > 0 && args.length > 0) {
             for (dev.brighten.antivpn.command.Command child : children) {
-                if(child.name().equalsIgnoreCase(args[0])  || Arrays.stream(child.aliases())
+                if (child.name().equalsIgnoreCase(args[0]) || Arrays.stream(child.aliases())
                         .anyMatch(alias2 -> alias2.equalsIgnoreCase(args[0]))) {
                     return child.tabComplete(new BungeeCommandExecutor(sender), "alias", IntStream
                             .range(0, args.length - 1)

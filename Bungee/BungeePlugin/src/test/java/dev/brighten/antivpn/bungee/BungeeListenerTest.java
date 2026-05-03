@@ -1,6 +1,7 @@
 package dev.brighten.antivpn.bungee;
 
 import dev.brighten.antivpn.AntiVPN;
+import dev.brighten.antivpn.StandardTest;
 import dev.brighten.antivpn.api.PlayerExecutor;
 import dev.brighten.antivpn.api.VPNConfig;
 import dev.brighten.antivpn.api.VPNExecutor;
@@ -21,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
-public class BungeeListenerTest {
+public class BungeeListenerTest extends StandardTest {
 
     private BungeeListener listener;
     private VPNExecutor vpnExecutor;
@@ -71,7 +72,7 @@ public class BungeeListenerTest {
     }
 
     @Test
-    public void testPreLoginEventAllowed()  {
+    public void testPreLoginEventAllowed() {
         PreLoginEvent event = mock(PreLoginEvent.class);
         PendingConnection connection = mock(PendingConnection.class);
 
@@ -86,7 +87,7 @@ public class BungeeListenerTest {
     }
 
     @Test
-    public void testPreLoginEventBlocked() {
+    public void testPreLoginEventBlocked() throws NoSuchFieldException, IllegalAccessException {
         PreLoginEvent event = mock(PreLoginEvent.class);
         PendingConnection connection = mock(PendingConnection.class);
 
@@ -97,10 +98,7 @@ public class BungeeListenerTest {
         when(connection.getSocketAddress()).thenReturn(new InetSocketAddress("1.1.1.1", 12345));
 
         // Mock proxy response
-        when(vpnExecutor.checkIp("1.1.1.1")).thenReturn(CompletableFuture.completedFuture(
-                VPNResponse.builder().success(true).proxy(true).ip("1.1.1.1")
-                        .method("N/A").countryName("N/A").countryCode("N/A").city("N/A").build()
-        ));
+        mockCache();
 
         listener.onListener(event);
 

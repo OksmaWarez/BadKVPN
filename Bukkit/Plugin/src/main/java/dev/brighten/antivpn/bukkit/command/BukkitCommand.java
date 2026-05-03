@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 public class BukkitCommand extends org.bukkit.command.Command {
 
     private final Command command;
+
     public BukkitCommand(Command command) {
         super(command.name(), command.description(), command.usage(), Arrays.asList(command.aliases()));
 
@@ -41,9 +42,9 @@ public class BukkitCommand extends org.bukkit.command.Command {
             throws IllegalArgumentException {
         val children = command.children();
 
-        if(children.length > 0 && args.length > 0) {
+        if (children.length > 0 && args.length > 0) {
             for (Command child : children) {
-                if(child.name().equalsIgnoreCase(args[0])  || Arrays.stream(child.aliases())
+                if (child.name().equalsIgnoreCase(args[0]) || Arrays.stream(child.aliases())
                         .anyMatch(alias2 -> alias2.equalsIgnoreCase(args[0]))) {
                     return child.tabComplete(new BukkitCommandExecutor(sender), alias, IntStream
                             .range(0, args.length - 1)
@@ -56,7 +57,7 @@ public class BukkitCommand extends org.bukkit.command.Command {
 
     @Override
     public boolean execute(CommandSender sender, String s, String[] args) {
-        if(!sender.hasPermission("antivpn.command.*")
+        if (!sender.hasPermission("antivpn.command.*")
                 && !sender.hasPermission(command.permission())) {
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                     AntiVPN.getInstance().getMessageHandler().getString("no-permission").getMessage()));
@@ -65,11 +66,11 @@ public class BukkitCommand extends org.bukkit.command.Command {
 
         val children = command.children();
 
-        if(children.length > 0 && args.length > 0) {
+        if (children.length > 0 && args.length > 0) {
             for (Command child : children) {
-                if(child.name().equalsIgnoreCase(args[0])  || Arrays.stream(child.aliases())
+                if (child.name().equalsIgnoreCase(args[0]) || Arrays.stream(child.aliases())
                         .anyMatch(alias -> alias.equalsIgnoreCase(args[0]))) {
-                    if(!sender.hasPermission("antivpn.command.*")
+                    if (!sender.hasPermission("antivpn.command.*")
                             && !sender.hasPermission(child.permission())) {
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                                 AntiVPN.getInstance().getMessageHandler().getString("no-permission").getMessage()));

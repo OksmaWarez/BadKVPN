@@ -91,7 +91,7 @@ public class BungeeListener extends VPNExecutor implements Listener {
 
         if (!result.resultType().isShouldBlock()) return;
 
-        if(!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
+        if (!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
             return;
         }
 
@@ -107,7 +107,7 @@ public class BungeeListener extends VPNExecutor implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onJoin(LoginEvent event) {
-        if(event.isCancelled()) return;
+        if (event.isCancelled()) return;
 
         // Handling player alerts on join
         AntiVPN.getInstance().getPlayerExecutor().getPlayer(event.getConnection().getUniqueId())

@@ -24,6 +24,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 public class BungeePlayer extends APIPlayer {
 
     private final ProxiedPlayer player;
+
     public BungeePlayer(ProxiedPlayer player) {
         super(player.getUniqueId(), player.getName(), player.getAddress().getAddress());
 

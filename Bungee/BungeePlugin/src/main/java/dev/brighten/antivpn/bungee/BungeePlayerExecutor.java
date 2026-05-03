@@ -31,7 +31,7 @@ public class BungeePlayerExecutor implements PlayerExecutor {
     public Optional<APIPlayer> getPlayer(String name) {
         ProxiedPlayer player = BungeePlugin.pluginInstance.getProxy().getPlayer(name);
 
-        if(player == null) return Optional.empty();
+        if (player == null) return Optional.empty();
 
         return Optional.of(cachedPlayers.computeIfAbsent(player.getUniqueId(), key -> new BungeePlayer(player)));
     }
@@ -40,7 +40,7 @@ public class BungeePlayerExecutor implements PlayerExecutor {
     public Optional<APIPlayer> getPlayer(UUID uuid) {
         ProxiedPlayer player = BungeePlugin.pluginInstance.getProxy().getPlayer(uuid);
 
-        if(player == null) return Optional.empty();
+        if (player == null) return Optional.empty();
 
         return Optional.of(cachedPlayers.computeIfAbsent(uuid, key -> new BungeePlayer(player)));
     }

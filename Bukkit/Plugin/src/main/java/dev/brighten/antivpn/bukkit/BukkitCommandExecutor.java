@@ -44,9 +44,9 @@ public class BukkitCommandExecutor implements CommandExecutor {
 
     @Override
     public Optional<APIPlayer> getPlayer() {
-        if(!isPlayer()) return Optional.empty();
+        if (!isPlayer()) return Optional.empty();
 
-        return AntiVPN.getInstance().getPlayerExecutor().getPlayer(((Player)sender).getUniqueId());
+        return AntiVPN.getInstance().getPlayerExecutor().getPlayer(((Player) sender).getUniqueId());
     }
 
     @Override

@@ -32,7 +32,7 @@ public class BukkitPlayerExecutor implements PlayerExecutor {
     public Optional<APIPlayer> getPlayer(String name) {
         final Player player = Bukkit.getPlayer(name);
 
-        if(player == null) {
+        if (player == null) {
             return Optional.empty();
         }
 
@@ -43,7 +43,7 @@ public class BukkitPlayerExecutor implements PlayerExecutor {
     public Optional<APIPlayer> getPlayer(UUID uuid) {
         final Player player = Bukkit.getPlayer(uuid);
 
-        if(player == null) {
+        if (player == null) {
             return Optional.empty();
         }
 

@@ -85,9 +85,9 @@ public class BukkitListener extends VPNExecutor implements Listener {
 
         CheckResult result = player.checkPlayer();
 
-        if(!result.resultType().isShouldBlock()) return;
+        if (!result.resultType().isShouldBlock()) return;
 
-        if(!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
+        if (!AntiVPN.getInstance().getVpnConfig().isKickPlayers()) {
             return;
         }
 
@@ -98,12 +98,11 @@ public class BukkitListener extends VPNExecutor implements Listener {
                     player,
                     result.response()
             );
-            case DENIED_PROXY ->
-                    StringUtil.varReplace(
-                            AntiVPN.getInstance().getVpnConfig().getKickMessage(),
-                            player,
-                            result.response()
-                    );
+            case DENIED_PROXY -> StringUtil.varReplace(
+                    AntiVPN.getInstance().getVpnConfig().getKickMessage(),
+                    player,
+                    result.response()
+            );
             default -> "You were kicked by KauriVPN for an unknown reason!";
         });
     }

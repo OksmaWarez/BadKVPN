@@ -24,6 +24,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class BukkitPlayer extends APIPlayer {
 
     private final Player player;
+
     public BukkitPlayer(Player player) {
         super(player.getUniqueId(), player.getName(), player.getAddress() != null ? player.getAddress().getAddress() : null);
 

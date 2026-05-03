@@ -3,6 +3,7 @@ package dev.brighten.antivpn.velocity;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.proxy.Player;
 import dev.brighten.antivpn.AntiVPN;
+import dev.brighten.antivpn.StandardTest;
 import dev.brighten.antivpn.api.PlayerExecutor;
 import dev.brighten.antivpn.api.VPNConfig;
 import dev.brighten.antivpn.api.VPNExecutor;
@@ -23,24 +24,21 @@ import java.util.logging.Logger;
 
 import static org.mockito.Mockito.*;
 
-public class VelocityListenerTest {
+public class VelocityListenerTest extends StandardTest {
 
     private VelocityListener listener;
-    private AntiVPN antiVPN;
     private VPNConfig config;
     private PlayerExecutor playerExecutor;
     private VPNExecutor vpnExecutor;
-    private MessageHandler messageHandler;
-    private VelocityPlugin velocityPlugin;
 
     @BeforeEach
     public void setUp() throws Exception {
-        antiVPN = mock(AntiVPN.class);
+        AntiVPN antiVPN = mock(AntiVPN.class);
         config = mock(VPNConfig.class);
         playerExecutor = mock(PlayerExecutor.class);
         vpnExecutor = mock(VPNExecutor.class);
-        messageHandler = mock(MessageHandler.class);
-        velocityPlugin = mock(VelocityPlugin.class);
+        MessageHandler messageHandler = mock(MessageHandler.class);
+        VelocityPlugin velocityPlugin = mock(VelocityPlugin.class);
 
         when(antiVPN.getVpnConfig()).thenReturn(config);
         when(antiVPN.getPlayerExecutor()).thenReturn(playerExecutor);
@@ -114,10 +112,7 @@ public class VelocityListenerTest {
         when(player.getRemoteAddress()).thenReturn(new InetSocketAddress("1.1.1.1", 12345));
 
         // Mock proxy response
-        when(vpnExecutor.checkIp("1.1.1.1")).thenReturn(CompletableFuture.completedFuture(
-                VPNResponse.builder().success(true).proxy(true).ip("1.1.1.1")
-                        .method("N/A").countryName("N/A").city("N/A").countryCode("N/A").build()
-        ));
+        mockCache();
 
         listener.onLogin(event);
 

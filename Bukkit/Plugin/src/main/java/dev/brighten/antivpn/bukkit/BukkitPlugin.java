@@ -72,7 +72,7 @@ public class BukkitPlugin implements LoaderBootstrap {
         playerCommandRunner.start();
 
         // Loading our bStats metrics to be pushed to https://bstats.org
-        if(AntiVPN.getInstance().getVpnConfig().metrics()) {
+        if (AntiVPN.getInstance().getVpnConfig().metrics()) {
             Bukkit.getLogger().info("Starting bStats metrics...");
             Metrics metrics = new Metrics(plugin, 12615);
             metrics.addCustomChart(new SimplePie("database_used", this::getDatabaseType));
@@ -129,7 +129,7 @@ public class BukkitPlugin implements LoaderBootstrap {
             Field field = SimpleCommandMap.class.getDeclaredField("knownCommands");
             field.setAccessible(true);
 
-            if(field.get(commandMap) instanceof Map<?, ?> knownCommands) {
+            if (field.get(commandMap) instanceof Map<?, ?> knownCommands) {
                 Map<String, org.bukkit.command.Command> casted = (Map<String, org.bukkit.command.Command>) knownCommands;
                 casted.values().removeAll(registeredCommands);
                 registeredCommands.clear();
@@ -149,11 +149,11 @@ public class BukkitPlugin implements LoaderBootstrap {
     private String getDatabaseType() {
         VPNDatabase database = AntiVPN.getInstance().getDatabase();
 
-        if(database instanceof MySqlVPN) {
+        if (database instanceof MySqlVPN) {
             return "MySQL";
-        } else if(database instanceof H2VPN) {
+        } else if (database instanceof H2VPN) {
             return "H2";
-        } else if(database instanceof MongoVPN) {
+        } else if (database instanceof MongoVPN) {
             return "MongoDB";
         } else {
             return "No-Database";

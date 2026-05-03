@@ -15,6 +15,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testImplementation project(':Common:Source')
     testImplementation project(':Common:loader-utils')
+    testImplementation testFixtures(project(':Common:Source'))
 }
 tasks.compileJava.dependsOn(':Common:Source:jar')
 

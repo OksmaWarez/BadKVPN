@@ -1,6 +1,7 @@
 package dev.brighten.antivpn.sponge;
 
 import dev.brighten.antivpn.AntiVPN;
+import dev.brighten.antivpn.StandardTest;
 import dev.brighten.antivpn.api.PlayerExecutor;
 import dev.brighten.antivpn.api.VPNConfig;
 import dev.brighten.antivpn.api.VPNExecutor;
@@ -22,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
-public class SpongeListenerTest {
+public class SpongeListenerTest extends StandardTest {
 
     private SpongeListener listener;
     private VPNExecutor vpnExecutor;
@@ -89,7 +90,7 @@ public class SpongeListenerTest {
     }
 
     @Test
-    public void testLoginEventBlocked() {
+    public void testLoginEventBlocked() throws NoSuchFieldException, IllegalAccessException {
         ServerSideConnectionEvent.Login event = mock(ServerSideConnectionEvent.Login.class);
         GameProfile profile = mock(GameProfile.class);
         ServerSideConnection connection = mock(ServerSideConnection.class);
@@ -101,10 +102,7 @@ public class SpongeListenerTest {
         when(connection.address()).thenReturn(new InetSocketAddress("1.1.1.1", 12345));
 
         // Mock proxy response
-        when(vpnExecutor.checkIp("1.1.1.1")).thenReturn(CompletableFuture.completedFuture(
-                VPNResponse.builder().success(true).proxy(true).ip("1.1.1.1")
-                        .method("N/A").countryName("N/A").countryCode("N/A").city("N/A").build()
-        ));
+        mockCache();
 
         listener.onJoin(event);
 

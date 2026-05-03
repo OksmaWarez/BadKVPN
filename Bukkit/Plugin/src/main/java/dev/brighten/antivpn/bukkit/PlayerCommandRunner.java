@@ -41,12 +41,12 @@ public class PlayerCommandRunner {
     void start() {
         executorService.scheduleAtFixedRate(() -> {
             long currentTime = System.currentTimeMillis();
-            while(!playerActions.isEmpty()) {
+            while (!playerActions.isEmpty()) {
                 PlayerAction action = playerActions.peek();
 
-                if(action == null) continue;
+                if (action == null) continue;
 
-                if(currentTime - action.start > 2000L || Bukkit.getPlayer(action.getUuid()) != null) {
+                if (currentTime - action.start > 2000L || Bukkit.getPlayer(action.getUuid()) != null) {
                     new BukkitRunnable() {
                         public void run() {
                             action.getAction().run();

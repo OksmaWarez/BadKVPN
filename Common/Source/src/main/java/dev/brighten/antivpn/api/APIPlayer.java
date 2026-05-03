@@ -36,7 +36,7 @@ public abstract class APIPlayer {
     @Setter
     private boolean alertsEnabled;
 
-    private static final Cache<String, CheckResult> checkResultCache = Caffeine.newBuilder()
+    public static final Cache<String, CheckResult> checkResultCache = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .maximumSize(2000)
             .build();
