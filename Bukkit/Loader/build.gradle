@@ -30,4 +30,8 @@ tasks.named('shadowJar') {
     dependsOn(':Bukkit:Plugin:shadowJar')
 }
 
+tasks.named('compileJava') {
+    dependsOn(':Bukkit:Plugin:shadowJar')
+}
+
 tasks.build.dependsOn shadowJar

@@ -29,4 +29,8 @@ tasks.named('shadowJar') {
     dependsOn(':Bungee:BungeePlugin:shadowJar')
 }
 
+tasks.named('compileJava') {
+    dependsOn(':Bungee:BungeePlugin:shadowJar')
+}
+
 tasks.build.dependsOn shadowJar

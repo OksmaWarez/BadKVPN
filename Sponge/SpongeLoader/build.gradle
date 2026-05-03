@@ -23,4 +23,8 @@ tasks.named('shadowJar') {
     dependsOn(':Sponge:SpongePlugin:shadowJar')
 }
 
+tasks.named('compileJava') {
+    dependsOn(':Sponge:SpongePlugin:shadowJar')
+}
+
 tasks.build.dependsOn shadowJar
