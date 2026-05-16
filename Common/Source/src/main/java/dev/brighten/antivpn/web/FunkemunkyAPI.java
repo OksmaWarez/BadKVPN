@@ -41,10 +41,7 @@ public class FunkemunkyAPI {
       String ip, String license, boolean cachedResults /* faster if set to true*/)
       throws JSONException, IOException {
     JSONObject result =
-        JsonReader.readJsonFromUrl(
-            String.format(
-                "http://ip-api.com/json/%s?fields=17002203",
-                ip));
+        JsonReader.readJsonFromUrl(String.format("http://ip-api.com/json/%s?fields=17002203", ip));
 
     return VPNResponse.fromJson(result);
   }
