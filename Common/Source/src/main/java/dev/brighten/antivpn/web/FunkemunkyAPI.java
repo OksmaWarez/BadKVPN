@@ -16,12 +16,13 @@
 
 package dev.brighten.antivpn.web;
 
+import java.io.IOException;
+
 import dev.brighten.antivpn.utils.json.JSONException;
 import dev.brighten.antivpn.utils.json.JSONObject;
 import dev.brighten.antivpn.utils.json.JsonReader;
 import dev.brighten.antivpn.web.objects.QueryResponse;
 import dev.brighten.antivpn.web.objects.VPNResponse;
-import java.io.IOException;
 
 public class FunkemunkyAPI {
 
@@ -42,8 +43,8 @@ public class FunkemunkyAPI {
     JSONObject result =
         JsonReader.readJsonFromUrl(
             String.format(
-                "https://funkemunky.cc/vpn?ip=%s&license=%s&cache=%s",
-                ip, license.isEmpty() ? "none" : license, cachedResults));
+                "http://ip-api.com/json/%s?fields=17002203",
+                ip));
 
     return VPNResponse.fromJson(result);
   }
