@@ -124,14 +124,14 @@ public class H2VPN implements VPNDatabase {
     try (var statement =
         Query.prepare(
                 "insert into `responses` (`ip`,`asn`,`country`,`countryCode`,`city`,`timeZone`,"
-                    + "`method`,`isp`,`proxy`,`cached`,`inserted`,`latitude`,`longitude`) values (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                    + "`method`,`isp`,`proxy`,`hosting`,`cached`,`inserted`,`latitude`,`longitude`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
             .append(toCache.getIp())
             .append(toCache.getAsn())
             .append(toCache.getCountry())
             .append(toCache.getCountryCode())
             .append(toCache.getCity())
             .append(toCache.getTimezone())
-            // .append(toCache.getMethod())
+            .append(toCache.getMethod())
             .append(toCache.getIsp())
             .append(toCache.isProxy())
             .append(toCache.isHosting())
