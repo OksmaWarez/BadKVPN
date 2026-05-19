@@ -30,7 +30,10 @@ import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import lombok.SneakyThrows;
@@ -86,6 +89,7 @@ public class H2VPN implements VPNDatabase {
                   rs.getString("isp"),
                   "N/A",
                   rs.getBoolean("proxy"),
+                  rs.getBoolean("hosting"),
                   rs.getBoolean("cached"),
                   true,
                   rs.getDouble("latitude"),
@@ -126,7 +130,7 @@ public class H2VPN implements VPNDatabase {
             .append(toCache.getCountryName())
             .append(toCache.getCountryCode())
             .append(toCache.getCity())
-            .append(toCache.getTimeZone())
+            .append(toCache.getTimezone())
             .append(toCache.getMethod())
             .append(toCache.getIsp())
             .append(toCache.isProxy())

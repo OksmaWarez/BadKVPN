@@ -16,7 +16,11 @@
 
 package dev.brighten.antivpn.database.mongo;
 
-import com.mongodb.*;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCredential;
+import com.mongodb.ReadPreference;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -30,7 +34,11 @@ import dev.brighten.antivpn.utils.CIDRUtils;
 import dev.brighten.antivpn.web.objects.VPNResponse;
 import java.math.BigDecimal;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.bson.Document;
@@ -92,8 +100,9 @@ public class MongoVPN implements VPNDatabase {
               .city(rdoc.getString("city"))
               .isp(rdoc.getString("isp"))
               .method(rdoc.getString("method"))
-              .timeZone(rdoc.getString("timeZone"))
+              .timezone(rdoc.getString("timeZone"))
               .proxy(rdoc.getBoolean("proxy"))
+              .hosting(rdoc.getBoolean("hosting"))
               .cached(rdoc.getBoolean("cached"))
               .success(true)
               .latitude(rdoc.getDouble("latitude"))
@@ -115,7 +124,7 @@ public class MongoVPN implements VPNDatabase {
       rdoc.put("city", toCache.getCity());
       rdoc.put("isp", toCache.getIsp());
       rdoc.put("method", toCache.getMethod());
-      rdoc.put("timeZone", toCache.getTimeZone());
+      rdoc.put("timeZone", toCache.getTimezone());
       rdoc.put("proxy", toCache.isProxy());
       rdoc.put("hosting", toCache.isHosting());
       rdoc.put("cached", toCache.isCached());
