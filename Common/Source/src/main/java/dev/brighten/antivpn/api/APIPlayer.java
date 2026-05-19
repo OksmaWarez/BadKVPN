@@ -142,7 +142,7 @@ public abstract class APIPlayer {
                       != AntiVPN.getInstance().getVpnConfig().getWhitelistCountries()) {
                 // Using our built in kicking system if no commands are configured
                 checkResult = new CheckResult(result, ResultType.DENIED_COUNTRY, false);
-              } else if (result.isProxy()) {
+              } else if (result.isProxy() || result.isHosting()) {
                 checkResult = new CheckResult(result, ResultType.DENIED_PROXY, false);
               } else {
                 checkResult = new CheckResult(result, ResultType.ALLOWED, false);

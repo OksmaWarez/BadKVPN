@@ -130,6 +130,7 @@ public class H2VPN implements VPNDatabase {
             .append(toCache.getMethod())
             .append(toCache.getIsp())
             .append(toCache.isProxy())
+            .append(toCache.isHosting())
             .append(toCache.isCached())
             .append(new Timestamp(System.currentTimeMillis()))
             .append(toCache.getLatitude())

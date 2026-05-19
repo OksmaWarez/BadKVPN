@@ -27,15 +27,15 @@ import lombok.Data;
 @Builder
 public class VPNResponse {
   private String asn,
-      ip,
+      query,
       countryName,
       countryCode,
       city,
-      timeZone,
+      timezone,
       method,
       isp,
       failureReason = "N/A";
-  private boolean proxy, cached;
+  private boolean proxy, cached, hosting;
   private final boolean success;
   private double latitude, longitude;
   private long lastAccess;
@@ -44,15 +44,16 @@ public class VPNResponse {
   public JSONObject toJson() throws JSONException {
     JSONObject json = new JSONObject();
 
-    json.put("ip", ip);
+    json.put("query", query);
     json.put("countryName", countryName);
     json.put("countryCode", countryCode);
     json.put("city", city);
     json.put("method", method);
     json.put("isp", isp);
     json.put("proxy", proxy);
+    json.put("hosting", hosting);
     json.put("success", success);
-    json.put("timeZone", timeZone);
+    json.put("timezone", timezone);
     json.put("queriesLeft", queriesLeft);
     json.put("cached", cached);
 
@@ -82,44 +83,26 @@ public class VPNResponse {
    * @throws JSONException Throws when JSON is not formatted properly.
    */
   public static VPNResponse fromJson(JSONObject jsonObject) throws JSONException {
-    boolean success =
-        jsonObject.has("success")
-            ? jsonObject.getBoolean("success")
-            : "success".equals(jsonObject.optString("status"));
-
-    if (success) {
-      String asn =
-          jsonObject.has("asn")
-              ? jsonObject.getString("asn")
-              : jsonObject.has("as") ? jsonObject.getString("as") : "N/A";
-      String ip =
-          jsonObject.has("ip") ? jsonObject.getString("ip") : jsonObject.optString("query", "N/A");
-      String countryName =
-          jsonObject.has("countryName")
-              ? jsonObject.getString("countryName")
-              : jsonObject.optString("country", "N/A");
-
-      return new VPNResponse(
-          asn,
-          ip,
-          countryName,
+      if ("success".equals(jsonObject.optString("status"))) {
+        return new VPNResponse(
+          jsonObject.getString("as"),
+          jsonObject.getString("query"),
+          jsonObject.getString("countryName"),
           jsonObject.getString("countryCode"),
           jsonObject.getString("city"),
-          jsonObject.has("timeZone") ? jsonObject.getString("timeZone") : "N/A",
+          jsonObject.getString("timezone"),
           jsonObject.has("method") ? jsonObject.getString("method") : "N/A",
           jsonObject.getString("isp"),
           "N/A",
           jsonObject.getBoolean("proxy"),
+          jsonObject.optBoolean("hosting", false),
           jsonObject.optBoolean("cached", false),
-          success,
-          jsonObject.has("latitude")
-              ? jsonObject.getDouble("latitude")
-              : jsonObject.getDouble("lat"),
-          jsonObject.has("longitude")
-              ? jsonObject.getDouble("longitude")
-              : jsonObject.getDouble("lon"),
-          jsonObject.optLong("lastAccess", System.currentTimeMillis()),
-          jsonObject.optInt("queriesLeft", -1));
+          jsonObject.getBoolean("success"),
+          jsonObject.getDouble("lat"),
+          jsonObject.getDouble("lon"),
+          jsonObject.getLong("lastAccess", System.currentTimeMillis()),
+          jsonObject.getInt("queriesLeft", -1)
+      );
     } else {
       return VPNResponse.builder()
           .success(false)

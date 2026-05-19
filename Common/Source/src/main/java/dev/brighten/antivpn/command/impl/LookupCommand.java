@@ -16,15 +16,16 @@
 
 package dev.brighten.antivpn.command.impl;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import dev.brighten.antivpn.AntiVPN;
 import dev.brighten.antivpn.api.APIPlayer;
 import dev.brighten.antivpn.command.Command;
 import dev.brighten.antivpn.command.CommandExecutor;
 import dev.brighten.antivpn.utils.StringUtil;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class LookupCommand extends Command {
   @Override
@@ -91,6 +92,8 @@ public class LookupCommand extends Command {
               executor.sendMessage("");
               executor.sendMessage(
                   "&e%s&8: &f%s", "Proxy", result.isProxy() ? "&a" + result.getMethod() : "&cNo");
+              executor.sendMessage(
+                  "&e%s&8: &f%s", "Hosting", result.isHosting() ? "&aYes" : "&cNo");
               executor.sendMessage("&e%s&8: &f%s", "ISP", result.getIsp());
               executor.sendMessage("&e%s&8: &f%s", "Country", result.getCountryName());
               executor.sendMessage("&e%s&8: &f%s", "City", result.getCity());

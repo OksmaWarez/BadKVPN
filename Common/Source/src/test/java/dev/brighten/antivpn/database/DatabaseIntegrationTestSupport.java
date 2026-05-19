@@ -106,6 +106,7 @@ abstract class DatabaseIntegrationTestSupport {
     assertTrue(storedResponse.isPresent(), "Expected cached response to be stored");
     assertEquals("AS123", storedResponse.get().getAsn());
     assertTrue(storedResponse.get().isProxy());
+    assertTrue(storedResponse.get().isHosting());
 
     database.deleteResponse(response.getIp());
     awaitCondition(
