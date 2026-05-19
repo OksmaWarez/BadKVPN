@@ -26,7 +26,8 @@ import java.io.IOException;
 public class FunkemunkyAPI {
 
   /**
-   * Queries <a href="http://ip-api.com/json/%s?fields=17002203">...</a> API and returns information on the IP
+   * Queries <a href="http://ip-api.com/json/%s?fields=17002203">...</a> API and returns information
+   * on the IP
    *
    * @param ip String
    * @param license String
