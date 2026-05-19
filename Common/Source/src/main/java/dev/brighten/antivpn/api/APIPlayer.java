@@ -16,16 +16,14 @@
 
 package dev.brighten.antivpn.api;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import dev.brighten.antivpn.AntiVPN;
+import dev.brighten.antivpn.message.VpnString;
 import java.net.InetAddress;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-
-import dev.brighten.antivpn.AntiVPN;
-import dev.brighten.antivpn.message.VpnString;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -120,7 +118,7 @@ public abstract class APIPlayer {
               if (!result.isSuccess()) {
                 AntiVPN.getInstance()
                     .getExecutor()
-                  .log(Level.WARNING, "The API query was not a success!");
+                    .log(Level.WARNING, "The API query was not a success!");
                 return;
               }
               // If the countryList() size is zero, no need to check.
