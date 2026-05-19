@@ -90,7 +90,7 @@ public class VPNResponse {
           jsonObject.getBoolean("proxy"),
           jsonObject.optBoolean("hosting", false),
           jsonObject.optBoolean("cached", false),
-          jsonObject.getBoolean("success"),
+          jsonObject.optBoolean("success", true),
           jsonObject.getDouble("lat"),
           jsonObject.getDouble("lon"),
           jsonObject.optLong("lastAccess", System.currentTimeMillis()),
