@@ -18,6 +18,12 @@ public class Fourth implements Version<VPNDatabase> {
       throw new DatabaseException("Failed to add hosting column to responses table", e);
     }
 
+    try (var statement = Query.prepare("ALTER TABLE `responses` ALTER COLUMN `asn` varchar(64)")) {
+      statement.execute();
+    } catch (SQLException e) {
+      throw new DatabaseException("Failed to widen asn column in responses table", e);
+    }
+
     try (var statement =
         Query.prepare("INSERT INTO `database_version` (`version`) VALUES (?)")
             .append(versionNumber())) {
