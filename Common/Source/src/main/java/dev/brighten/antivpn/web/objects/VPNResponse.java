@@ -83,21 +83,21 @@ public class VPNResponse {
    */
   public static VPNResponse fromJson(JSONObject jsonObject) throws JSONException {
     boolean success =
-      jsonObject.has("success")
-        ? jsonObject.getBoolean("success")
-        : "success".equals(jsonObject.optString("status"));
+        jsonObject.has("success")
+            ? jsonObject.getBoolean("success")
+            : "success".equals(jsonObject.optString("status"));
 
     if (success) {
-        String asn =
+      String asn =
           jsonObject.has("asn")
-            ? jsonObject.getString("asn")
-            : jsonObject.has("as") ? jsonObject.getString("as") : "N/A";
-        String ip =
+              ? jsonObject.getString("asn")
+              : jsonObject.has("as") ? jsonObject.getString("as") : "N/A";
+      String ip =
           jsonObject.has("ip") ? jsonObject.getString("ip") : jsonObject.optString("query", "N/A");
-        String countryName =
+      String countryName =
           jsonObject.has("countryName")
-            ? jsonObject.getString("countryName")
-            : jsonObject.optString("country", "N/A");
+              ? jsonObject.getString("countryName")
+              : jsonObject.optString("country", "N/A");
 
       return new VPNResponse(
           asn,
@@ -107,15 +107,15 @@ public class VPNResponse {
           jsonObject.getString("city"),
           jsonObject.has("timeZone") ? jsonObject.getString("timeZone") : "N/A",
           jsonObject.has("method") ? jsonObject.getString("method") : "N/A",
-            jsonObject.getString("isp"),
-            "N/A",
+          jsonObject.getString("isp"),
+          "N/A",
           jsonObject.getBoolean("proxy"),
-            jsonObject.optBoolean("cached", false),
-            success,
-            jsonObject.has("latitude")
+          jsonObject.optBoolean("cached", false),
+          success,
+          jsonObject.has("latitude")
               ? jsonObject.getDouble("latitude")
               : jsonObject.getDouble("lat"),
-            jsonObject.has("longitude")
+          jsonObject.has("longitude")
               ? jsonObject.getDouble("longitude")
               : jsonObject.getDouble("lon"),
           jsonObject.optLong("lastAccess", System.currentTimeMillis()),
