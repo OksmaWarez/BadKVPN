@@ -96,6 +96,7 @@ abstract class DatabaseIntegrationTestSupport {
             .countryCode("US")
             .city("New York")
             .proxy(true)
+            .hosting(true)
             .cached(true)
             .success(true)
             .build();
