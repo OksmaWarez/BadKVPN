@@ -17,7 +17,7 @@ public class StandardTest {
                 .proxy(true)
                 .ip("1.1.1.1")
                 .method("N/A")
-                .countryName("N/A")
+                .country("N/A")
                 .countryCode("N/A")
                 .city("N/A")
                 .build(),

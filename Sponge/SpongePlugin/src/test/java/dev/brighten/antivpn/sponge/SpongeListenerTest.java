@@ -58,7 +58,7 @@ public class SpongeListenerTest extends StandardTest {
                     .proxy(false)
                     .ip("127.0.0.1")
                     .method("N/A")
-                    .countryName("N/A")
+                    .country("N/A")
                     .city("N/A")
                     .build()));
 

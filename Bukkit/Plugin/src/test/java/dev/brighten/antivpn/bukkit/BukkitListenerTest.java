@@ -78,7 +78,7 @@ public class BukkitListenerTest extends StandardTest {
                     .proxy(false)
                     .ip("127.0.0.1")
                     .method("N/A")
-                    .countryName("N/A")
+                    .country("N/A")
                     .city("N/A")
                     .build()));
 
@@ -114,7 +114,7 @@ public class BukkitListenerTest extends StandardTest {
                 .proxy(false)
                 .ip("127.0.0.1")
                 .method("N/A")
-                .countryName("N/A")
+                .country("N/A")
                 .countryCode("N/A")
                 .city("N/A")
                 .build(),

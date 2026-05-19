@@ -94,7 +94,7 @@ public class LookupCommand extends Command {
               executor.sendMessage(
                   "&e%s&8: &f%s", "Hosting", result.isHosting() ? "&aYes" : "&cNo");
               executor.sendMessage("&e%s&8: &f%s", "ISP", result.getIsp());
-              executor.sendMessage("&e%s&8: &f%s", "Country", result.getCountryName());
+              executor.sendMessage("&e%s&8: &f%s", "Country", result.getCountry());
               executor.sendMessage("&e%s&8: &f%s", "City", result.getCity());
               executor.sendMessage(
                   "&e%s&8: &f%s",

@@ -85,7 +85,7 @@ public class VelocityListener extends VPNExecutor {
                               .getVpnConfig()
                               .getCountryVanillaKickReason()
                               .replace("%player%", event.getPlayer().getUsername())
-                              .replace("%country%", result.response().getCountryName())
+                              .replace("%country%", result.response().getCountry())
                               .replace("%code%", result.response().getCountryCode()))));
       case DENIED_PROXY -> {
         VelocityPlugin.INSTANCE
@@ -105,7 +105,7 @@ public class VelocityListener extends VPNExecutor {
                             .getVpnConfig()
                             .getKickMessage()
                             .replace("%player%", event.getPlayer().getUsername())
-                            .replace("%country%", result.response().getCountryName())
+                            .replace("%country%", result.response().getCountry())
                             .replace("%code%", result.response().getCountryCode()))));
       }
     }

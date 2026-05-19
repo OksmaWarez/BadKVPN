@@ -34,7 +34,7 @@ public class StringUtil {
         input
             .replace("%player%", player.getName())
             .replace("%reason%", result.getMethod())
-            .replace("%country%", result.getCountryName())
+            .replace("%country%", result.getCountry())
             .replace("%city%", result.getCity()));
   }
 

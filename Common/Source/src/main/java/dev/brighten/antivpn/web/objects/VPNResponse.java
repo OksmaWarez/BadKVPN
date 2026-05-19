@@ -26,7 +26,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class VPNResponse {
-  private String asn, ip, countryName, countryCode, city, timezone, method, isp;
+  private String asn, ip, country, countryCode, city, timezone, method, isp;
   @Builder.Default private String failureReason = "N/A";
   private boolean proxy, cached, hosting;
   private final boolean success;
@@ -38,7 +38,7 @@ public class VPNResponse {
     JSONObject json = new JSONObject();
 
     json.put("query", ip);
-    json.put("countryName", countryName);
+    json.put("country", country);
     json.put("countryCode", countryCode);
     json.put("city", city);
     json.put("method", method);
@@ -80,7 +80,7 @@ public class VPNResponse {
       return new VPNResponse(
           jsonObject.getString("as"),
           jsonObject.getString("query"),
-          jsonObject.getString("countryName"),
+          jsonObject.getString("country"),
           jsonObject.getString("countryCode"),
           jsonObject.getString("city"),
           jsonObject.getString("timezone"),

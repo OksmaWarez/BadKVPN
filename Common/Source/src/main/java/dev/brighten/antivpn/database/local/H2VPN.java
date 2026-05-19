@@ -81,7 +81,7 @@ public class H2VPN implements VPNDatabase {
               new VPNResponse(
                   rs.getString("asn"),
                   rs.getString("ip"),
-                  rs.getString("countryName"),
+                  rs.getString("country"),
                   rs.getString("countryCode"),
                   rs.getString("city"),
                   rs.getString("timeZone"),
@@ -112,7 +112,7 @@ public class H2VPN implements VPNDatabase {
    * Query.
    * prepare("create table if not exists `responses` (`ip` varchar(45) not null, "
    * +
-   * "`countryName` varchar(64), `countryCode` varchar(10), `city` varchar(64), `timeZone` varchar(64), "
+   * "`country` varchar(64), `countryCode` varchar(10), `city` varchar(64), `timeZone` varchar(64), "
    * +
    * "`method` varchar(32), `isp` varchar(32), `proxy` boolean, `cached` boolean "
    * + "`latitude` double, `longitude` double)");
@@ -123,11 +123,11 @@ public class H2VPN implements VPNDatabase {
 
     try (var statement =
         Query.prepare(
-                "insert into `responses` (`ip`,`asn`,`countryName`,`countryCode`,`city`,`timeZone`,"
+                "insert into `responses` (`ip`,`asn`,`country`,`countryCode`,`city`,`timeZone`,"
                     + "`method`,`isp`,`proxy`,`cached`,`inserted`,`latitude`,`longitude`) values (?,?,?,?,?,?,?,?,?,?,?,?,?)")
             .append(toCache.getIp())
             .append(toCache.getAsn())
-            .append(toCache.getCountryName())
+            .append(toCache.getCountry())
             .append(toCache.getCountryCode())
             .append(toCache.getCity())
             .append(toCache.getTimezone())

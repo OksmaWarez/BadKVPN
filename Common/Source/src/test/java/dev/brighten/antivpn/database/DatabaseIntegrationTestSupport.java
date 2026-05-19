@@ -92,7 +92,7 @@ abstract class DatabaseIntegrationTestSupport {
         VPNResponse.builder()
             .ip("1.2.3.4")
             .asn("AS123")
-            .countryName("United States")
+            .country("United States")
             .countryCode("US")
             .city("New York")
             .proxy(true)

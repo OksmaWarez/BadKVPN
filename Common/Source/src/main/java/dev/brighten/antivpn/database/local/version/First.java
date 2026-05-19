@@ -47,7 +47,7 @@ public class First implements Version<VPNDatabase> {
       closeOnEnd(
               Query.prepare(
                   "create table if not exists `responses` (`ip` varchar(45) not null, `asn` varchar(12),"
-                      + "`countryName` text, `countryCode` varchar(10), `city` text, `timeZone` varchar(64), "
+                      + "`country` text, `countryCode` varchar(10), `city` text, `timeZone` varchar(64), "
                       + "`method` varchar(32), `isp` text, `proxy` boolean, `cached` boolean, `inserted` timestamp,"
                       + "`latitude` double, `longitude` double)"))
           .execute();

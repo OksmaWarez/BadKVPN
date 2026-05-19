@@ -95,7 +95,7 @@ public class MongoVPN implements VPNDatabase {
           VPNResponse.builder()
               .asn(rdoc.getString("asn"))
               .ip(ip)
-              .countryName(rdoc.getString("countryName"))
+              .country(rdoc.getString("country"))
               .countryCode(rdoc.getString("countryCode"))
               .city(rdoc.getString("city"))
               .isp(rdoc.getString("isp"))
@@ -119,7 +119,7 @@ public class MongoVPN implements VPNDatabase {
       Document rdoc = new Document("ip", toCache.getIp());
 
       rdoc.put("asn", toCache.getAsn());
-      rdoc.put("countryName", toCache.getCountryName());
+      rdoc.put("country", toCache.getCountry());
       rdoc.put("countryCode", toCache.getCountryCode());
       rdoc.put("city", toCache.getCity());
       rdoc.put("isp", toCache.getIsp());
