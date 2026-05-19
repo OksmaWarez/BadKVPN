@@ -16,13 +16,12 @@
 
 package dev.brighten.antivpn.web;
 
-import java.io.IOException;
-
 import dev.brighten.antivpn.utils.json.JSONException;
 import dev.brighten.antivpn.utils.json.JSONObject;
 import dev.brighten.antivpn.utils.json.JsonReader;
 import dev.brighten.antivpn.web.objects.QueryResponse;
 import dev.brighten.antivpn.web.objects.VPNResponse;
+import java.io.IOException;
 
 public class FunkemunkyAPI {
 

@@ -83,8 +83,8 @@ public class VPNResponse {
    * @throws JSONException Throws when JSON is not formatted properly.
    */
   public static VPNResponse fromJson(JSONObject jsonObject) throws JSONException {
-      if ("success".equals(jsonObject.optString("status"))) {
-        return new VPNResponse(
+    if ("success".equals(jsonObject.optString("status"))) {
+      return new VPNResponse(
           jsonObject.getString("as"),
           jsonObject.getString("query"),
           jsonObject.getString("countryName"),
@@ -101,8 +101,7 @@ public class VPNResponse {
           jsonObject.getDouble("lat"),
           jsonObject.getDouble("lon"),
           jsonObject.getLong("lastAccess", System.currentTimeMillis()),
-          jsonObject.getInt("queriesLeft", -1)
-      );
+          jsonObject.getInt("queriesLeft", -1));
     } else {
       return VPNResponse.builder()
           .success(false)
