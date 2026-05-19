@@ -120,9 +120,7 @@ public abstract class APIPlayer {
                     .getExecutor()
                     .log(
                         Level.WARNING,
-                        "The API query was not a success! "
-                            + "You may need to upgrade your license on "
-                            + "https://funkemunky.cc/shop");
+                        "The API query was not a success!");
                 return;
               }
               // If the countryList() size is zero, no need to check.

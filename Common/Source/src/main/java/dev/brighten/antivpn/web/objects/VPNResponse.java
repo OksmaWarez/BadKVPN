@@ -82,28 +82,36 @@ public class VPNResponse {
    * @throws JSONException Throws when JSON is not formatted properly.
    */
   public static VPNResponse fromJson(JSONObject jsonObject) throws JSONException {
-    if (jsonObject.getBoolean("success")) {
+    boolean success = jsonObject.has("success") ? jsonObject.getBoolean("success")
+        : "success".equals(jsonObject.optString("status"));
+
+    if (success) {
+      String asn = jsonObject.has("asn") ? jsonObject.getString("asn")
+          : jsonObject.has("as") ? jsonObject.getString("as") : "N/A";
+      String ip = jsonObject.has("ip") ? jsonObject.getString("ip")
+          : jsonObject.optString("query", "N/A");
+      String countryName = jsonObject.has("countryName") ? jsonObject.getString("countryName")
+          : jsonObject.optString("country", "N/A");
+
       return new VPNResponse(
-          jsonObject.getString("asn"),
-          jsonObject.getString("ip"),
-          jsonObject.getString("countryName"),
+          asn,
+          ip,
+          countryName,
           jsonObject.getString("countryCode"),
           jsonObject.getString("city"),
-          jsonObject.getString("timeZone"),
+          jsonObject.has("timeZone") ? jsonObject.getString("timeZone") : "N/A",
           jsonObject.has("method") ? jsonObject.getString("method") : "N/A",
-          jsonObject.getString("isp"),
-          "N/A",
+          jsonObject.getString("isp"), "N/A",
           jsonObject.getBoolean("proxy"),
-          jsonObject.getBoolean("cached"),
-          jsonObject.getBoolean("success"),
-          jsonObject.getDouble("latitude"),
-          jsonObject.getDouble("longitude"),
-          jsonObject.getLong("lastAccess"),
-          jsonObject.getInt("queriesLeft"));
+          jsonObject.optBoolean("cached", false), success,
+          jsonObject.has("latitude") ? jsonObject.getDouble("latitude") : jsonObject.getDouble("lat"),
+          jsonObject.has("longitude") ? jsonObject.getDouble("longitude") : jsonObject.getDouble("lon"),
+          jsonObject.optLong("lastAccess", System.currentTimeMillis()),
+          jsonObject.optInt("queriesLeft", -1));
     } else {
       return VPNResponse.builder()
           .success(false)
-          .failureReason(jsonObject.getString("failureReason"))
+          .failureReason(jsonObject.optString("failureReason", "Unknown error"))
           .build();
     }
   }
